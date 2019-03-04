@@ -1,0 +1,20 @@
+export const PARTITION_TYPES = {
+  H1: 'h1',
+  H2: 'h2',
+  H3: 'h3',
+  H4: 'h4',
+  H5: 'h5',
+  H6: 'h6',
+  TEXT: 'text',
+  BOLD: 'bold',
+  ITALICS: 'italics',
+  LINK: 'link',
+  RELATION: 'relation',
+  COLOR: 'color',
+  UNORDERED_LIST: 'ul',
+  ORDERED_LIST: 'ol',
+  IMAGE: 'image',
+  QUOTES: 'quotes',
+  HR: 'hr',
+  PARAGRAPH: 'p'
+}
