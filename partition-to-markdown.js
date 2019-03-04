@@ -1,4 +1,4 @@
-import { PARTITION_KEYWORDS } from "./partition-keywords";    // TODO: Update path
+import { PARTITION_TYPES } from "../sp-markdown-partitioner/partition-types";
 
 const partitionExample = [
   {
