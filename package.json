@@ -1,0 +1,12 @@
+{
+  "name": "sp-markdown-partitioner",
+  "version": "0.0.1",
+  "contributors": [
+    "Austin Glenn"
+  ],
+  "license": "NONE",
+  "repository": "Pergamene/sp-markdown-partitioner",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}
