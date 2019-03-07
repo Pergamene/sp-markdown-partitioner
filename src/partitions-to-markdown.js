@@ -120,7 +120,7 @@ const partitionExample = [
   },
   {
     type: 'quotes',
-    value: 'or quoted paragraphs\nif it's more than one line'
+    value: 'or quoted paragraphs\nif it\'s more than one line'
   }
 ];
 
