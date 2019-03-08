@@ -1,19 +1,24 @@
 import { PARTITION_TYPES } from "./partition-types";
 
+// TODO: escape token
+
 /**
  * assemble all partition fragments
  * 
  * @param {string} markdownText see partitions-to-markdown 
  */
 export function generatePartitions(markdownText) {
+  let partition;
   let partitions = [];
-  let markdownSplits = markdownText.split('\n');
-  markdownSplits = _combineListItems(markdownSplits);
+  let markdownSplits = _splitAtBreakPoints(markdownText.trim());
   for (let substringIndex in markdownSplits) {
-    if (partitions.length === 0) {
-      partitions = _parseOuterPartition(markdownSplits[substringIndex]);
+    partition = _parseOuterPartition(markdownSplits[substringIndex].trim());
+    if (partition.length) {
+      for (let partitionIndex in partition) {
+        partitions.push(partition[partitionIndex]);
+      }
     } else {
-      partitions = [partitions, _parseOuterPartition(markdownSplits[substringIndex])];
+      partitions.push(partition);
     }
   }
   return partitions;
@@ -31,7 +36,7 @@ function _parseOuterPartition(markdownSubstring) {
   } else if (markdownSubstring.startsWith('![')) {
     return _buildImagePartition(markdownSubstring);
   } else if (markdownSubstring.startsWith('---')) {
-    return _buildHrPartition(markdownSubstring);
+    return _buildHrPartition();
   } else {
     return _buildParagraphPartition(markdownSubstring);
   }
@@ -64,101 +69,213 @@ function _getHeaderPartitionType(size) {
 }
 
 function _buildUnorderedListPartition(markdownSubstring) {
-  let list = [];
+  let items = [];
   let listItems = markdownSubstring.split('\n');
-  let item;
+  let value;
   let itemObject;
   for (let i in listItems) {
-    item = listItems[i].substring(1).trim();
-    itemObject = [ { type: PARTITION_TYPES.TEXT, value: item } ];
-    if (list.length === 0) {
-      list = itemObject;
+    value = listItems[i].substring(1).trim();
+    if (_checkForInnerPartitions(value)) {
+      itemObject = _generateInnerPartitions(value);
     } else {
-      list = [list, itemObject];
+      itemObject = { type: PARTITION_TYPES.TEXT, value };
     }
+    items.push(itemObject);
   }
-  return [ { type: PARTITION_TYPES.UNORDERED_LIST, items: list } ];
+  return [ { type: PARTITION_TYPES.UNORDERED_LIST, items } ];
 }
 
 function _buildOrderedListPartition(markdownSubstring) {
-  let list = [];
+  let items = [];
   let listItems = markdownSubstring.split('\n');
-  let item;
+  let value;
   let itemObject;
   for (let i in listItems) {
-    item = listItems[i].substring(1).trim();
-    itemObject = [ { type: PARTITION_TYPES.TEXT, value: item } ];
-    if (list.length === 0) {
-      list = itemObject;
+    value = listItems[i].substring(1).trim();
+    if (_checkForInnerPartitions(value)) {
+      itemObject = _generateInnerPartitions(value);
     } else {
-      list = [list, itemObject];
+      itemObject = { type: PARTITION_TYPES.TEXT, value };
     }
+    items.push(itemObject);
   }
-  return [ { type: PARTITION_TYPES.ORDERED_LIST, items: list } ];
+  return [ { type: PARTITION_TYPES.ORDERED_LIST, items } ];
 }
 
 function _buildQuotePartition(markdownSubstring) {
-
+  let value;
+  if (markdownSubstring.startsWith('>>>')) {
+    value = markdownSubstring.substring(3, markdownSubstring.length - 3).trim();
+  } else {
+    value = markdownSubstring.substring(1).trim();
+  }
+  if (_checkForInnerPartitions(value)) {
+    value = _generateInnerPartitions(value);
+    return { type: PARTITION_TYPES.QUOTES, partitions: [value] };
+  }
+  return { type: PARTITION_TYPES.QUOTES, value };
 }
 
 function _buildImagePartition(markdownSubstring) {
-
+  let breakIndex = markdownSubstring.indexOf(']');
+  let altText = markdownSubstring.substring(2, breakIndex);
+  let link = markdownSubstring.substring(breakIndex + 2, markdownSubstring.length - 1);
+  return { type: PARTITION_TYPES.IMAGE, altText, link };
 }
 
-function _buildHrPartition(markdownSubstring) {
-
+function _buildHrPartition() {
+  return { type: PARTITION_TYPES.HR };
 }
 
 function _buildParagraphPartition(markdownSubstring) {
-  
+  return { type: PARTITION_TYPES, partitions: _generateInnerPartitions(markdownSubstring) };
 }
 
 function _checkForInnerPartitions(markdownSubstring) {
+  let markdownCharacters = [ '*', '_', '[', '{' ];
+  let i;
+  let hasPartitions = false;
+  for (let charIndex in markdownCharacters) {
+    i = markdownSubstring.indexOf(markdownCharacters[charIndex]);
+    if (i >= 0) {
+      hasPartitions = hasPartitions || !_isEscapedCharacter(i, markdownSubstring);
+    }
+  }
+  return hasPartitions;
+}
 
+function _isEscapedCharacter(charIndex, markdownSplits) {
+  if (charIndex > 0 && markdownSplits[charIndex - 1] === '\\') {
+    return true;
+  }
+  return false;
+}
+
+function _generateInnerPartitions(markdownSubstring) {
+  let partition;
+  let partitions = [];
+  let innerSplits = markdownSubstring.split(' ');
+  for (let substringIndex in innerSplits) {
+    partition = _parseInnerPartition(innerSplits[substringIndex]);
+    if (partition.length) {
+      for (let partitionIndex in partition) {
+        partitions.push(partition[partitionIndex]);
+      }
+    } else {
+      partitions.push(partition);
+    }
+  }
+  return partitions;
 }
 
 function _parseInnerPartition(markdownSubstring) {
-
+  if (markdownSubstring.startsWith('*')) {
+    return _buildBoldPartition(markdownSubstring);
+  } else if (markdownSubstring.startsWith('_')) {
+    return _buildItalicsPartition(markdownSubstring);
+  } else if (markdownSubstring.startsWith('[')) {
+    return _buildLinkPartition(markdownSubstring);
+  } else if (markdownSubstring.startsWith('{')) {
+    if (markdownSubstring.indexOf('#') < 0) {
+      return _buildRelationPartition(markdownSubstring);
+    } else {
+      return _buildColorPartition(markdownSubstring);
+    }
+  } else {
+    return _buildTextPartition(markdownSubstring);
+  }
 }
 
+function _buildBoldPartition(markdownSubstring) {
+  let value = markdownSubstring.substring(1, markdownSubstring.length - 1);
+  return { type: PARTITION_TYPES.BOLD, value };
+}
 
+function _buildItalicsPartition(markdownSubstring) {
+  let value = markdownSubstring.substring(1, markdownSubstring.length - 1);
+  return { type: PARTITION_TYPES.ITALICS, value };
+}
 
-function _combineListItems(markdownSplits) {
-  let newSplits = [];
-  let previousType = null;
-  let currentSplit;
-  let combinedItem;
-  for (let split in markdownSplits) {
-    currentSplit = markdownSplits[split].trim();
-    if (currentSplit.startsWith('* ')) {
-      if (previousType === PARTITION_TYPES.ORDERED_LIST) {
-        newSplits.push(combinedItem);
-        previousType = null;
-      } 
-      if (previousType !== PARTITION_TYPES.UNORDERED_LIST) {
-        previousType = PARTITION_TYPES.UNORDERED_LIST;
-        combinedItem = currentSplit;
-      } else {
-        combinedItem += '\n' + currentSplit;
-      }
-    } else if (currentSplit.startsWith('. ')) {
-      if (previousType === PARTITION_TYPES.UNORDERED_LIST) {
-        newSplits.push(combinedItem);
-        previousType = null;
-      } 
-      if (previousType !== PARTITION_TYPES.ORDERED_LIST) {
-        previousType = PARTITION_TYPES.ORDERED_LIST;
-        combinedItem = currentSplit;
-      } else {
-        combinedItem += '\n' + currentSplit;
-      }
-    } else if (previousType === PARTITION_TYPES.UNORDERED_LIST || previousType === PARTITION_TYPES.ORDERED_LIST) {
-      newSplits.push(combinedItem);
-      previousType = null;
-      newSplits.push(currentSplit);
+function _buildLinkPartition(markdownSubstring) {
+  let value = markdownSubstring.substring(1, markdownSubstring.indexOf(']'));
+  let link = markdownSubstring.substring(markdownSubstring.indexOf('(') + 1, markdownSubstring.length - 1);
+  return { type: PARTITION_TYPES.LINK, value, link };
+}
+
+function _buildRelationPartition(markdownSubstring) {
+  let value = markdownSubstring.substring(1, markdownSubstring.indexOf('}'));
+  let relation = markdownSubstring.substring(markdownSubstring.indexOf('(') + 1, markdownSubstring.length - 1);
+  return { type: PARTITION_TYPES.RELATION, value, relation };
+}
+
+function _buildColorPartition(markdownSubstring) {
+  let value = markdownSubstring.substring(1, markdownSubstring.indexOf('}'));
+  let color = markdownSubstring.substring(markdownSubstring.indexOf('(') + 1, markdownSubstring.length - 1);
+  return { type: PARTITION_TYPES.COLOR, value, color };
+}
+
+function _buildTextPartition(markdownSubstring) {
+  let value = markdownSubstring;
+  return { type: PARTITION_TYPES.TEXT, value };
+}
+
+function _splitAtBreakPoints(markdownText) {
+  let markdownSplits = [];
+  let lastBreakPoint = 0;
+  let index = markdownText.indexOf('\n', lastBreakPoint);
+  while (index !== -1) {
+    index = _findBreakPoint(lastBreakPoint, index, markdownText);
+    markdownSplits.push(markdownText.substring(lastBreakPoint, index));
+    lastBreakPoint = index + 1;
+    index = markdownText.indexOf('\n', lastBreakPoint);
+  }
+  return markdownSplits;
+}
+
+function _findBreakPoint(lastBreakPoint, index, markdownText) {
+  if (index >= markdownText.length) {
+    return markdownText.length;
+  }
+
+  let currentSubstring = markdownText.substring(lastBreakPoint);
+  let nextSubstring = markdownText.substring(index + 1);
+  if (currentSubstring.startsWith('#')) {
+    return index;
+  } else if (currentSubstring.startsWith('* ')) {
+    if (nextSubstring.startsWith('* ')) {
+      index = markdownText.indexOf('\n', index + 1);
+      return _findBreakPoint(lastBreakPoint, index, markdownText);
     } else {
-      newSplits.push(currentSplit);
+      return index;
+    }
+  } else if (currentSubstring.startsWith('. ')) {
+    if (nextSubstring.startsWith('. ')) {
+      index = markdownText.indexOf('\n', index + 1);
+      return _findBreakPoint(lastBreakPoint, index, markdownText);
+    } else {
+      return index;
+    }
+  } else if (currentSubstring.startsWith('>>>')) {
+    index = markdownText.indexOf('>>>', index + 1);
+    return index + 3;
+  } else if (currentSubstring.startsWith('> ')) {
+    return index;
+  } else if (currentSubstring.startsWith('![')) {
+    return index;
+  } else if (currentSubstring.startsWith('---')) {
+    return index;
+  } else {
+    if (nextSubstring.startsWith('#')) {
+      return index;
+    } else if (nextSubstring.startsWith('* ')) {
+      return index;
+    } else if (nextSubstring.startsWith('. ')) {
+      return index;
+    } else if (nextSubstring.startsWith('>') || nextSubstring.startsWith('>>>')) {
+      return index;
+    } else {
+      index = markdownText.indexOf('\n', index + 1);
+      return _findBreakPoint(lastBreakPoint, index, markdownText);
     }
   }
-  return newSplits;
 }
