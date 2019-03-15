@@ -194,8 +194,7 @@ function _convertPartitionToMarkdownOuter(partition) {
     case PARTITION_TYPES.H1:
       return markdownText += '# ' + _partitionCheckParseOrAdd(partition);
     case PARTITION_TYPES.PARAGRAPH:
-      return markdownText += _partitionCheckParseOrAdd(partition);
-      // return markdownText += '# ' + partition.value + '\n\n';         // TODO: If we decide no on embeded markdown for headers.
+      return markdownText += '# ' + partition.value;
     case PARTITION_TYPES.UNORDERED_LIST:
       return markdownText += _parseList(partition.items, PARTITION_TYPES.UNORDERED_LIST).trim();
     case PARTITION_TYPES.ORDERED_LIST:
