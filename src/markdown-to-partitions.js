@@ -1,7 +1,5 @@
 import { PARTITION_TYPES } from "./partition-types";
 
-// TODO: escape token
-
 /**
  * assemble all partition fragments
  * 
@@ -10,16 +8,10 @@ import { PARTITION_TYPES } from "./partition-types";
 export function generatePartitions(markdownText) {
   let partition;
   let partitions = [];
-  let markdownSplits = _splitAtBreakPoints(markdownText.trim());
+  let markdownSplits = _splitAtOuterBreakPoints(markdownText.trim());
   for (let substringIndex in markdownSplits) {
-    partition = _parseOuterPartition(markdownSplits[substringIndex].trim());
-    if (partition.length) {
-      for (let partitionIndex in partition) {
-        partitions.push(partition[partitionIndex]);
-      }
-    } else {
-      partitions.push(partition);
-    }
+    partition = _parseOuterPartition(markdownSplits[substringIndex]);
+    partitions.push(partition);
   }
   return partitions;
 }
@@ -27,11 +19,11 @@ export function generatePartitions(markdownText) {
 function _parseOuterPartition(markdownSubstring) {
   if (markdownSubstring.startsWith('#')) {
     return _buildHeaderPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('* ')) {
+  } else if (markdownSubstring.startsWith('*')) {
     return _buildUnorderedListPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('. ')) {
+  } else if (markdownSubstring.startsWith('.')) {
     return _buildOrderedListPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('>' || '>>>')) {
+  } else if (markdownSubstring.startsWith('>')) {
     return _buildQuotePartition(markdownSubstring);
   } else if (markdownSubstring.startsWith('![')) {
     return _buildImagePartition(markdownSubstring);
@@ -42,7 +34,6 @@ function _parseOuterPartition(markdownSubstring) {
   }
 }
 
-// TODO: inner partitions?
 function _buildHeaderPartition(markdownSubstring) {
   let size = markdownSubstring.lastIndexOf('#') + 1;
   let type = _getHeaderPartitionType(size);
@@ -69,23 +60,16 @@ function _getHeaderPartitionType(size) {
 }
 
 function _buildUnorderedListPartition(markdownSubstring) {
-  let items = [];
-  let listItems = markdownSubstring.split('\n');
-  let value;
-  let itemObject;
-  for (let i in listItems) {
-    value = listItems[i].substring(1).trim();
-    if (_checkForInnerPartitions(value)) {
-      itemObject = _generateInnerPartitions(value);
-    } else {
-      itemObject = { type: PARTITION_TYPES.TEXT, value };
-    }
-    items.push(itemObject);
-  }
-  return [ { type: PARTITION_TYPES.UNORDERED_LIST, items } ];
+  let items = _makeListItems(markdownSubstring);
+  return { type: PARTITION_TYPES.UNORDERED_LIST, items };
 }
 
 function _buildOrderedListPartition(markdownSubstring) {
+  let items = _makeListItems(markdownSubstring);
+  return { type: PARTITION_TYPES.ORDERED_LIST, items };
+}
+
+function _makeListItems(markdownSubstring) {
   let items = [];
   let listItems = markdownSubstring.split('\n');
   let value;
@@ -99,7 +83,7 @@ function _buildOrderedListPartition(markdownSubstring) {
     }
     items.push(itemObject);
   }
-  return [ { type: PARTITION_TYPES.ORDERED_LIST, items } ];
+  return items;
 }
 
 function _buildQuotePartition(markdownSubstring) {
@@ -111,7 +95,7 @@ function _buildQuotePartition(markdownSubstring) {
   }
   if (_checkForInnerPartitions(value)) {
     value = _generateInnerPartitions(value);
-    return { type: PARTITION_TYPES.QUOTES, partitions: [value] };
+    return { type: PARTITION_TYPES.QUOTES, partitions: value };
   }
   return { type: PARTITION_TYPES.QUOTES, value };
 }
@@ -128,24 +112,23 @@ function _buildHrPartition() {
 }
 
 function _buildParagraphPartition(markdownSubstring) {
-  return { type: PARTITION_TYPES, partitions: _generateInnerPartitions(markdownSubstring) };
+  return { type: PARTITION_TYPES.PARAGRAPH, partitions: _generateInnerPartitions(markdownSubstring) };
 }
 
+// @TODO: let _generateInnerPartitions check, not the outer partitions
 function _checkForInnerPartitions(markdownSubstring) {
   let markdownCharacters = [ '*', '_', '[', '{' ];
-  let i;
   let hasPartitions = false;
   for (let charIndex in markdownCharacters) {
-    i = markdownSubstring.indexOf(markdownCharacters[charIndex]);
-    if (i >= 0) {
-      hasPartitions = hasPartitions || !_isEscapedCharacter(i, markdownSubstring);
+    if (markdownSubstring.indexOf(markdownCharacters[charIndex]) >= 0) {
+      hasPartitions = hasPartitions || !_isEscapedCharacter(charIndex, markdownSubstring);
     }
   }
   return hasPartitions;
 }
 
-function _isEscapedCharacter(charIndex, markdownSplits) {
-  if (charIndex > 0 && markdownSplits[charIndex - 1] === '\\') {
+function _isEscapedCharacter(charIndex, markdownSubstring) {
+  if (charIndex > 0 && markdownSubstring[charIndex - 1] === '\\') {
     return true;
   }
   return false;
@@ -154,9 +137,10 @@ function _isEscapedCharacter(charIndex, markdownSplits) {
 function _generateInnerPartitions(markdownSubstring) {
   let partition;
   let partitions = [];
-  let innerSplits = markdownSubstring.split(' ');
+  let innerSplits = _splitAtInnerBreakPoint(markdownSubstring);
   for (let substringIndex in innerSplits) {
     partition = _parseInnerPartition(innerSplits[substringIndex]);
+    // @TODO: possibly old way?
     if (partition.length) {
       for (let partitionIndex in partition) {
         partitions.push(partition[partitionIndex]);
@@ -169,6 +153,9 @@ function _generateInnerPartitions(markdownSubstring) {
 }
 
 function _parseInnerPartition(markdownSubstring) {
+  // @TODO: by the time it gets here, markdownSubstring should just have a .type property
+  // that you apply the switch on.  The string parser should know the partition types and there's
+  // no reason to repeat that work.
   if (markdownSubstring.startsWith('*')) {
     return _buildBoldPartition(markdownSubstring);
   } else if (markdownSubstring.startsWith('_')) {
@@ -219,24 +206,23 @@ function _buildTextPartition(markdownSubstring) {
   return { type: PARTITION_TYPES.TEXT, value };
 }
 
-function _splitAtBreakPoints(markdownText) {
+function _splitAtOuterBreakPoints(markdownText) {
   let markdownSplits = [];
   let lastBreakPoint = 0;
   let index = markdownText.indexOf('\n', lastBreakPoint);
   while (index !== -1) {
-    index = _findBreakPoint(lastBreakPoint, index, markdownText);
-    markdownSplits.push(markdownText.substring(lastBreakPoint, index));
+    index = _findOuterBreakPoint(lastBreakPoint, index, markdownText);
+    markdownSplits.push(markdownText.substring(lastBreakPoint, index).trim());
     lastBreakPoint = index + 1;
     index = markdownText.indexOf('\n', lastBreakPoint);
   }
   return markdownSplits;
 }
 
-function _findBreakPoint(lastBreakPoint, index, markdownText) {
+function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
   if (index >= markdownText.length) {
     return markdownText.length;
   }
-
   let currentSubstring = markdownText.substring(lastBreakPoint);
   let nextSubstring = markdownText.substring(index + 1);
   if (currentSubstring.startsWith('#')) {
@@ -244,14 +230,14 @@ function _findBreakPoint(lastBreakPoint, index, markdownText) {
   } else if (currentSubstring.startsWith('* ')) {
     if (nextSubstring.startsWith('* ')) {
       index = markdownText.indexOf('\n', index + 1);
-      return _findBreakPoint(lastBreakPoint, index, markdownText);
+      return _findOuterBreakPoint(lastBreakPoint, index, markdownText);
     } else {
       return index;
     }
   } else if (currentSubstring.startsWith('. ')) {
     if (nextSubstring.startsWith('. ')) {
       index = markdownText.indexOf('\n', index + 1);
-      return _findBreakPoint(lastBreakPoint, index, markdownText);
+      return _findOuterBreakPoint(lastBreakPoint, index, markdownText);
     } else {
       return index;
     }
@@ -271,11 +257,82 @@ function _findBreakPoint(lastBreakPoint, index, markdownText) {
       return index;
     } else if (nextSubstring.startsWith('. ')) {
       return index;
-    } else if (nextSubstring.startsWith('>') || nextSubstring.startsWith('>>>')) {
+      // @TODO: needed?
+    } else if (nextSubstring.startsWith('>') /*|| nextSubstring.startsWith('>>>')*/) {
       return index;
     } else {
       index = markdownText.indexOf('\n', index + 1);
-      return _findBreakPoint(lastBreakPoint, index, markdownText);
+      return _findOuterBreakPoint(lastBreakPoint, index, markdownText);
     }
   }
+}
+
+function _splitAtInnerBreakPoint(markdownSubstring) {
+  let markdownSubstringWithBreaks = _findInnerBreakPoint(markdownSubstring);
+  // @TODO: make <b> a const, and something more generic, like "SP_BREAK"
+  let markdownSplits = markdownSubstringWithBreaks.split('<b>');
+  return markdownSplits;
+}
+
+function _findInnerBreakPoint(markdownSubstring) {
+  let markdownSubstringWithBreaks = markdownSubstring;
+  let index = markdownSubstringWithBreaks.indexOf('*');
+  while (index >= 0) {
+    markdownSubstringWithBreaks = _insertBreakPoint(index, markdownSubstringWithBreaks);
+    index = markdownSubstringWithBreaks.indexOf('*', index + 4);
+    if (index >= 0) {
+      markdownSubstringWithBreaks = _insertBreakPoint(index + 1, markdownSubstringWithBreaks);
+      index = markdownSubstringWithBreaks.indexOf('*', index + 1);
+    }
+  }
+  index = markdownSubstringWithBreaks.indexOf('_');
+  while (index >= 0) {
+    markdownSubstringWithBreaks = _insertBreakPoint(index, markdownSubstringWithBreaks);
+    index = markdownSubstringWithBreaks.indexOf('_', index + 4);
+    if (index >= 0) {
+      markdownSubstringWithBreaks = _insertBreakPoint(index + 1, markdownSubstringWithBreaks);
+      index = markdownSubstringWithBreaks.indexOf('_', index + 1);
+    }
+  }
+  let startIndex, endIndex;
+  index = markdownSubstringWithBreaks.indexOf('[');
+  while (index >= 0) {
+    startIndex = index;
+    markdownSubstringWithBreaks = _insertBreakPoint(index, markdownSubstringWithBreaks);
+    index = markdownSubstringWithBreaks.indexOf(')', index + 4);
+    endIndex = index;
+    markdownSubstringWithBreaks = _removeBreakPoint(startIndex, endIndex, markdownSubstring);
+    if (index >= 0) {
+      markdownSubstringWithBreaks = _insertBreakPoint(index + 1, markdownSubstringWithBreaks);
+      index = markdownSubstringWithBreaks.indexOf('[', index + 1);
+    }
+  }
+  index = markdownSubstringWithBreaks.indexOf('{');
+  while (index >= 0) {
+    startIndex = index;
+    markdownSubstringWithBreaks = _insertBreakPoint(index, markdownSubstringWithBreaks);
+    index = markdownSubstringWithBreaks.indexOf(')', index + 4);
+    endIndex = index;
+    markdownSubstringWithBreaks = _removeBreakPoint(startIndex, endIndex, markdownSubstring);
+    if (index >= 0) {
+      markdownSubstringWithBreaks = _insertBreakPoint(index + 1, markdownSubstringWithBreaks);
+      index = markdownSubstringWithBreaks.indexOf('{', index + 1);
+    }
+  }
+  return markdownSubstringWithBreaks;
+}
+
+function _insertBreakPoint(insertAt, markdownSubstring) {
+  if (!_isEscapedCharacter(insertAt, markdownSubstring)) {
+    let firstHalf = markdownSubstring.substring(0, insertAt);
+    let secondHalf = markdownSubstring.substring(insertAt);
+    return firstHalf + '<b>' + secondHalf;
+  } else {
+    return markdownSubstring;
+  }
+}
+
+function _removeBreakPoint(startIndex, endIndex, markdownSubstring) {
+  let split = markdownSubstring.substring(startIndex, endIndex).split('<b>');
+  return split[0] + split[1];
 }
