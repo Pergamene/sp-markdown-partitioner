@@ -132,7 +132,7 @@ const partitionExample = [
 
 This is regular text.
 Any parition type can be split on multiple lines.
-They *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).
+It *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).
 
 * unordered list
 

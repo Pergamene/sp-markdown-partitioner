@@ -1,4 +1,5 @@
 import { PARTITION_TYPES } from "./partition-types";
+import { generateInnerPartitions } from "./inner-partitions";
 
 /**
  * assemble all partition fragments
@@ -9,8 +10,8 @@ export function generatePartitions(markdownText) {
   let partition;
   let partitions = [];
   let markdownSplits = _splitAtOuterBreakPoints(markdownText.trim());
-  for (let substringIndex in markdownSplits) {
-    partition = _parseOuterPartition(markdownSplits[substringIndex]);
+  for (let markdownSubstring of markdownSplits) {
+    partition = _parseOuterPartition(markdownSubstring);
     partitions.push(partition);
   }
   return partitions;
@@ -74,11 +75,10 @@ function _makeListItems(markdownSubstring) {
   let listItems = markdownSubstring.split('\n');
   let value;
   let itemObject;
-  for (let i in listItems) {
-    value = listItems[i].substring(1).trim();
-    if (_checkForInnerPartitions(value)) {
-      itemObject = _generateInnerPartitions(value);
-    } else {
+  for (let item of listItems) {
+    value = item.substring(1).trim();
+    itemObject = _generateInnerPartitions(value);
+    if (!itemObject) {
       itemObject = { type: PARTITION_TYPES.TEXT, value };
     }
     items.push(itemObject);
@@ -93,11 +93,12 @@ function _buildQuotePartition(markdownSubstring) {
   } else {
     value = markdownSubstring.substring(1).trim();
   }
-  if (_checkForInnerPartitions(value)) {
-    value = _generateInnerPartitions(value);
-    return { type: PARTITION_TYPES.QUOTES, partitions: value };
+  let partitions = _generateInnerPartitions(value);
+  if (partitions) {
+    return { type: PARTITION_TYPES.QUOTES, partitions };
+  } else {
+    return { type: PARTITION_TYPES.QUOTES, value };
   }
-  return { type: PARTITION_TYPES.QUOTES, value };
 }
 
 function _buildImagePartition(markdownSubstring) {
@@ -115,96 +116,7 @@ function _buildParagraphPartition(markdownSubstring) {
   return { type: PARTITION_TYPES.PARAGRAPH, partitions: _generateInnerPartitions(markdownSubstring) };
 }
 
-// @TODO: let _generateInnerPartitions check, not the outer partitions
-function _checkForInnerPartitions(markdownSubstring) {
-  let markdownCharacters = [ '*', '_', '[', '{' ];
-  let hasPartitions = false;
-  for (let charIndex in markdownCharacters) {
-    if (markdownSubstring.indexOf(markdownCharacters[charIndex]) >= 0) {
-      hasPartitions = hasPartitions || !_isEscapedCharacter(charIndex, markdownSubstring);
-    }
-  }
-  return hasPartitions;
-}
-
-function _isEscapedCharacter(charIndex, markdownSubstring) {
-  if (charIndex > 0 && markdownSubstring[charIndex - 1] === '\\') {
-    return true;
-  }
-  return false;
-}
-
-function _generateInnerPartitions(markdownSubstring) {
-  let partition;
-  let partitions = [];
-  let innerSplits = _splitAtInnerBreakPoint(markdownSubstring);
-  for (let substringIndex in innerSplits) {
-    partition = _parseInnerPartition(innerSplits[substringIndex]);
-    // @TODO: possibly old way?
-    if (partition.length) {
-      for (let partitionIndex in partition) {
-        partitions.push(partition[partitionIndex]);
-      }
-    } else {
-      partitions.push(partition);
-    }
-  }
-  return partitions;
-}
-
-function _parseInnerPartition(markdownSubstring) {
-  // @TODO: by the time it gets here, markdownSubstring should just have a .type property
-  // that you apply the switch on.  The string parser should know the partition types and there's
-  // no reason to repeat that work.
-  if (markdownSubstring.startsWith('*')) {
-    return _buildBoldPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('_')) {
-    return _buildItalicsPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('[')) {
-    return _buildLinkPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('{')) {
-    if (markdownSubstring.indexOf('#') < 0) {
-      return _buildRelationPartition(markdownSubstring);
-    } else {
-      return _buildColorPartition(markdownSubstring);
-    }
-  } else {
-    return _buildTextPartition(markdownSubstring);
-  }
-}
-
-function _buildBoldPartition(markdownSubstring) {
-  let value = markdownSubstring.substring(1, markdownSubstring.length - 1);
-  return { type: PARTITION_TYPES.BOLD, value };
-}
-
-function _buildItalicsPartition(markdownSubstring) {
-  let value = markdownSubstring.substring(1, markdownSubstring.length - 1);
-  return { type: PARTITION_TYPES.ITALICS, value };
-}
-
-function _buildLinkPartition(markdownSubstring) {
-  let value = markdownSubstring.substring(1, markdownSubstring.indexOf(']'));
-  let link = markdownSubstring.substring(markdownSubstring.indexOf('(') + 1, markdownSubstring.length - 1);
-  return { type: PARTITION_TYPES.LINK, value, link };
-}
-
-function _buildRelationPartition(markdownSubstring) {
-  let value = markdownSubstring.substring(1, markdownSubstring.indexOf('}'));
-  let relation = markdownSubstring.substring(markdownSubstring.indexOf('(') + 1, markdownSubstring.length - 1);
-  return { type: PARTITION_TYPES.RELATION, value, relation };
-}
-
-function _buildColorPartition(markdownSubstring) {
-  let value = markdownSubstring.substring(1, markdownSubstring.indexOf('}'));
-  let color = markdownSubstring.substring(markdownSubstring.indexOf('(') + 1, markdownSubstring.length - 1);
-  return { type: PARTITION_TYPES.COLOR, value, color };
-}
-
-function _buildTextPartition(markdownSubstring) {
-  let value = markdownSubstring;
-  return { type: PARTITION_TYPES.TEXT, value };
-}
+// HELPER METHODS
 
 function _splitAtOuterBreakPoints(markdownText) {
   let markdownSplits = [];
@@ -265,74 +177,4 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
       return _findOuterBreakPoint(lastBreakPoint, index, markdownText);
     }
   }
-}
-
-function _splitAtInnerBreakPoint(markdownSubstring) {
-  let markdownSubstringWithBreaks = _findInnerBreakPoint(markdownSubstring);
-  // @TODO: make <b> a const, and something more generic, like "SP_BREAK"
-  let markdownSplits = markdownSubstringWithBreaks.split('<b>');
-  return markdownSplits;
-}
-
-function _findInnerBreakPoint(markdownSubstring) {
-  let markdownSubstringWithBreaks = markdownSubstring;
-  let index = markdownSubstringWithBreaks.indexOf('*');
-  while (index >= 0) {
-    markdownSubstringWithBreaks = _insertBreakPoint(index, markdownSubstringWithBreaks);
-    index = markdownSubstringWithBreaks.indexOf('*', index + 4);
-    if (index >= 0) {
-      markdownSubstringWithBreaks = _insertBreakPoint(index + 1, markdownSubstringWithBreaks);
-      index = markdownSubstringWithBreaks.indexOf('*', index + 1);
-    }
-  }
-  index = markdownSubstringWithBreaks.indexOf('_');
-  while (index >= 0) {
-    markdownSubstringWithBreaks = _insertBreakPoint(index, markdownSubstringWithBreaks);
-    index = markdownSubstringWithBreaks.indexOf('_', index + 4);
-    if (index >= 0) {
-      markdownSubstringWithBreaks = _insertBreakPoint(index + 1, markdownSubstringWithBreaks);
-      index = markdownSubstringWithBreaks.indexOf('_', index + 1);
-    }
-  }
-  let startIndex, endIndex;
-  index = markdownSubstringWithBreaks.indexOf('[');
-  while (index >= 0) {
-    startIndex = index;
-    markdownSubstringWithBreaks = _insertBreakPoint(index, markdownSubstringWithBreaks);
-    index = markdownSubstringWithBreaks.indexOf(')', index + 4);
-    endIndex = index;
-    markdownSubstringWithBreaks = _removeBreakPoint(startIndex, endIndex, markdownSubstring);
-    if (index >= 0) {
-      markdownSubstringWithBreaks = _insertBreakPoint(index + 1, markdownSubstringWithBreaks);
-      index = markdownSubstringWithBreaks.indexOf('[', index + 1);
-    }
-  }
-  index = markdownSubstringWithBreaks.indexOf('{');
-  while (index >= 0) {
-    startIndex = index;
-    markdownSubstringWithBreaks = _insertBreakPoint(index, markdownSubstringWithBreaks);
-    index = markdownSubstringWithBreaks.indexOf(')', index + 4);
-    endIndex = index;
-    markdownSubstringWithBreaks = _removeBreakPoint(startIndex, endIndex, markdownSubstring);
-    if (index >= 0) {
-      markdownSubstringWithBreaks = _insertBreakPoint(index + 1, markdownSubstringWithBreaks);
-      index = markdownSubstringWithBreaks.indexOf('{', index + 1);
-    }
-  }
-  return markdownSubstringWithBreaks;
-}
-
-function _insertBreakPoint(insertAt, markdownSubstring) {
-  if (!_isEscapedCharacter(insertAt, markdownSubstring)) {
-    let firstHalf = markdownSubstring.substring(0, insertAt);
-    let secondHalf = markdownSubstring.substring(insertAt);
-    return firstHalf + '<b>' + secondHalf;
-  } else {
-    return markdownSubstring;
-  }
-}
-
-function _removeBreakPoint(startIndex, endIndex, markdownSubstring) {
-  let split = markdownSubstring.substring(startIndex, endIndex).split('<b>');
-  return split[0] + split[1];
 }
