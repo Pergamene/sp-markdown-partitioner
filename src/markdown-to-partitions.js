@@ -77,7 +77,7 @@ function _makeListItems(markdownSubstring) {
   let itemObject;
   for (let item of listItems) {
     value = item.substring(1).trim();
-    itemObject = _generateInnerPartitions(value);
+    itemObject = generateInnerPartitions(value);
     if (!itemObject) {
       itemObject = { type: PARTITION_TYPES.TEXT, value };
     }
@@ -93,7 +93,7 @@ function _buildQuotePartition(markdownSubstring) {
   } else {
     value = markdownSubstring.substring(1).trim();
   }
-  let partitions = _generateInnerPartitions(value);
+  let partitions = generateInnerPartitions(value);
   if (partitions) {
     return { type: PARTITION_TYPES.QUOTES, partitions };
   } else {
@@ -113,7 +113,7 @@ function _buildHrPartition() {
 }
 
 function _buildParagraphPartition(markdownSubstring) {
-  return { type: PARTITION_TYPES.PARAGRAPH, partitions: _generateInnerPartitions(markdownSubstring) };
+  return { type: PARTITION_TYPES.PARAGRAPH, partitions: generateInnerPartitions(markdownSubstring) };
 }
 
 // HELPER METHODS
