@@ -1,5 +1,5 @@
-import { PARTITION_TYPES } from "./partition-types";
-import { generateInnerPartitions } from "./inner-partitions";
+import { PARTITION_TYPES } from './partition-types';
+import { generateInnerPartitions } from './inner-partitions';
 
 /**
  * assemble all partition fragments

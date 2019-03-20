@@ -6,7 +6,11 @@
   ],
   "license": "NONE",
   "repository": "Pergamene/sp-markdown-partitioner",
-  "scripts": {},
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "jest": "^24.5.0"
+  }
 }

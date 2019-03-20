@@ -2,7 +2,8 @@ import { PARTITION_TYPES } from "./partition-types";
 
 export function generateInnerPartitions(markdownSubstring) {
   let partitions = [];
-
+  let breakPoints = _splitAtInnerBreakPoints(markdownSubstring);
+  for ()
 }
 
 function _parseInnerPartition(markdownSubstring) {
@@ -35,16 +36,13 @@ function _buildTextPartition(markdownSubstring) {
 
 // HELPER METHODS
 
-function _findInnerBreakPoints(markdownSubstring) {
+function _splitAtInnerBreakPoints(markdownSubstring) {
   let breakPoints = [];
 
 }
 
 function _findNextInnerBreakPoint(startIndex, markdownSubstring) {
-  let bold = markdownSubstring.indexOf('*', startIndex);
-  let italics = markdownSubstring.indexOf('_', startIndex);
-  let link = markdownSubstring.indexOf('[', startIndex);
-  let relationColor = markdownSubstring.indexOf('{', startIndex);
+  
 }
 
 function _ignoreCharacter(charIndex, markdownSubstring) {
