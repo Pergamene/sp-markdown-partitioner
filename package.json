@@ -5,16 +5,5 @@
     "Austin Glenn"
   ],
   "license": "NONE",
-  "repository": "Pergamene/sp-markdown-partitioner",
-  "scripts": {
-    "test": "jest"
-  },
-  "dependencies": {
-    "@babel/core": "^7.4.0",
-    "@babel/preset-env": "^7.4.1",
-    "babel-jest": "^24.5.0"
-  },
-  "devDependencies": {
-    "jest": "^24.5.0"
-  }
+  "repository": "Pergamene/sp-markdown-partitioner"
 }
