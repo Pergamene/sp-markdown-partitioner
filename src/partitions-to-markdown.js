@@ -1,4 +1,4 @@
-import { PARTITION_TYPES } from '../sp-markdown-partitioner/partition-types';
+import { PARTITION_TYPES } from './partition-types';
 
 const partitionExample = [
   {

@@ -1,9 +1,9 @@
-import { PARTITION_TYPES } from "./partition-types";
+import { PARTITION_TYPES } from './partition-types';
 
 export function generateInnerPartitions(markdownSubstring) {
   let partitions = [];
-  let breakPoints = _splitAtInnerBreakPoints(markdownSubstring);
-  for ()
+  let markdownSplits = _splitAtInnerBreakPoints(markdownSubstring);
+  
 }
 
 function _parseInnerPartition(markdownSubstring) {
