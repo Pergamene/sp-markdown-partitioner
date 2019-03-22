@@ -131,7 +131,7 @@ const partitionExample = [
 ## This is an h2 header
 
 This is regular text.
-Any parition type can be split on multiple lines.
+It can be split on multiple lines.
 It *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).
 
 * unordered list
@@ -149,7 +149,7 @@ It *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(P
 
 >>>
 or quoted paragraphs
-if it's more than one line
+if it\'s more than one line
 >>>
 `
 
@@ -239,9 +239,9 @@ function _partitionCheckParseOrAdd(partition) {
 function _parseQuote(partition) {
   let markdownText = _partitionCheckParseOrAdd(partition);
   if (markdownText.includes('\n')) {
-    return '>>>\n' + markdownText + '\n>>>\n\n';
+    return '>>>\n' + markdownText + '\n>>>';
   } else {
-    return '> ' + markdownText + '\n\n';
+    return '> ' + markdownText;
   }
 }
 
