@@ -1,5 +1,5 @@
 import { PARTITION_TYPES } from './partition-types';
-import { generateInnerPartitions } from './inner-partitions';
+import { generateInnerPartitions } from './markdown-to-inner-partitions';
 
 /**
  * assemble all partition fragments
@@ -104,6 +104,9 @@ function _buildQuotePartition(markdownSubstring) {
 function _buildImagePartition(markdownSubstring) {
   let breakIndex = markdownSubstring.indexOf(']');
   let altText = markdownSubstring.substring(2, breakIndex);
+  if (altText === '') {
+    altText = null;
+  }
   let link = markdownSubstring.substring(breakIndex + 2, markdownSubstring.length - 1);
   return { type: PARTITION_TYPES.IMAGE, altText, link };
 }
@@ -128,6 +131,7 @@ function _splitAtOuterBreakPoints(markdownText) {
     lastBreakPoint = index + 1;
     index = markdownText.indexOf('\n', lastBreakPoint);
   }
+  markdownSplits.push(markdownText.substring(lastBreakPoint).trim());
   return markdownSplits;
 }
 

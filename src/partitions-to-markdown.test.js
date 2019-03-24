@@ -4,7 +4,7 @@ import { generateMarkdown } from './partitions-to-markdown';
 let testCases = [
   {
     name: 'test for headers',
-    paramPartitions: [{type: 'h4',value: 'This is an h4 header'},{type: 'h3',value: 'This is an h3 header'},{type: 'h1',value: 'This is an h1 header'},{type: 'h6',value: 'This is an h6 header'},{type: 'h5',value: 'This is an h5 header'},{type: 'h2',value: 'This is an h2 header'}],
+    paramPartitions: [{type: 'h4', value: 'This is an h4 header'},{type: 'h3', value: 'This is an h3 header'},{type: 'h1', value: 'This is an h1 header'},{type: 'h6', value: 'This is an h6 header'},{type: 'h5', value: 'This is an h5 header'},{type: 'h2', value: 'This is an h2 header'}],
     returnMarkdown: '#### This is an h4 header\n\n### This is an h3 header\n\n# This is an h1 header\n\n###### This is an h6 header\n\n##### This is an h5 header\n\n## This is an h2 header'
   },
   {
