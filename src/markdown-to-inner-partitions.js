@@ -4,6 +4,8 @@ export function generateInnerPartitions(markdownSubstring) {
   let partitions = [];
   let markdownSplits = _splitAtInnerBreakPoints(markdownSubstring);
   
+  // @TODO: temp
+  return [{ type: PARTITION_TYPES.TEXT, value: markdownSubstring }];
 }
 
 function _parseInnerPartition(markdownSubstring) {
