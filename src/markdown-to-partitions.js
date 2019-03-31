@@ -7,7 +7,8 @@ import { generateInnerPartitions } from './markdown-to-inner-partitions';
  * @param {string} markdownText see partitions-to-markdown 
  */
 export function generatePartitions(markdownText) {
-  markdownText = markdownText.replace(/\n\s*\n/g, '\n');
+  // markdownText = markdownText.replace(/\n\s*\n/g, '\n');  Original, doesn't seem to be needed.
+  markdownText = markdownText.replace(/\n+/g, '\n');
   let partition;
   let partitions = [];
   let markdownSplits = _splitAtOuterBreakPoints(markdownText.trim());
