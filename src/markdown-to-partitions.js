@@ -129,6 +129,9 @@ function _splitAtOuterBreakPoints(markdownText) {
   let index = markdownText.indexOf('\n', lastBreakPoint);
   while (index !== -1) {
     index = _findOuterBreakPoint(lastBreakPoint, index, markdownText);
+    if (index === -1) {
+      break;
+    }
     markdownSplits.push(markdownText.substring(lastBreakPoint, index).trim());
     lastBreakPoint = index + 1;
     index = markdownText.indexOf('\n', lastBreakPoint);
@@ -138,8 +141,8 @@ function _splitAtOuterBreakPoints(markdownText) {
 }
 
 function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
-  if (index >= markdownText.length) {
-    return markdownText.length;
+  if (index === -1) {
+    return index;
   }
   let currentSubstring = markdownText.substring(lastBreakPoint);
   let nextSubstring = markdownText.substring(index + 1);
