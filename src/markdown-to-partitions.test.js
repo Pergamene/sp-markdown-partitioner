@@ -45,6 +45,11 @@ let testCases = [
     name: 'test for hr',
     paramMarkdown: '---',
     returnPartitions: [{type: 'hr'}]
+  },
+  {
+    name: 'test for multiple outer partitions',
+    paramMarkdown: '',
+    returnPartitions: [{}]
   }
 ];
 

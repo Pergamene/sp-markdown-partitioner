@@ -1,6 +1,5 @@
 import { generateMarkdown } from './partitions-to-markdown';
 
-
 let testCases = [
   {
     name: 'test for headers',
