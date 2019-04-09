@@ -48,14 +48,13 @@ let testCases = [
   },
   {
     name: 'test for multiple outer partitions',
-    paramMarkdown: '',
-    returnPartitions: [{}]
+    paramMarkdown: 'This test contains\nparagraphs.\n# And headers\n* ul 1\n* ul 2\n* ul 3\n. ol 1\n. ol 2\n. ol 3\n![image with alt text](www.image.com)\n![](www.image.com)\n> Quotes on a single line.\n>>>\nMultiline\nquotes.\n>>>',
+    returnPartitions: [{type: 'p', partitions: [{type: 'text', value: 'This test contains\nparagraphs.'}]},{type: 'h1', value: 'And headers'},{type: 'ul', items: [{type: 'text', value: 'ul 1'},{type: 'text', value: 'ul 2'},{type: 'text', value: 'ul 3'}]},{type: 'ol', items: [{type: 'text', value: 'ol 1'},{type: 'text', value: 'ol 2'},{type: 'text', value: 'ol 3'}]},{type: 'image', altText: 'image with alt text', link: 'www.image.com'},{type: 'image', altText: null, link: 'www.image.com'},{type: 'quotes', value: 'Quotes on a single line.'},{type: 'quotes', value: 'Multiline\nquotes.'}]
   }
 ];
 
 for (let testCase of testCases) {
   test(testCase.name, () => {
-    debugger;
     expect(generatePartitions(testCase.paramMarkdown)).toEqual(testCase.returnPartitions);
   });
 }

@@ -13,23 +13,18 @@ let testCases = [
   },
   {
     name: 'test for link',
-    paramMarkdown: '',
-    returnPartitions: [{}]
+    paramMarkdown: '[This is a test for links](www.link.com)',
+    returnPartitions: [{type: 'link', value: 'This is a test for links', link: 'www.link.com'}]
   },
   {
     name: 'test for relation',
-    paramMarkdown: '',
-    returnPartitions: [{}]
+    paramMarkdown: '{This is a test for relations}(PG_123456789012345)',
+    returnPartitions: [{type: 'relation', value: 'This is a test for relations', relation: 'PG_123456789012345'}]
   },
   {
     name: 'test for color',
-    paramMarkdown: '',
-    returnPartitions: [{}]
-  },
-  {
-    name: 'test for text',
-    paramMarkdown: '',
-    returnPartitions: [{}]
+    paramMarkdown: '{This is a test for colors}(#FF2200)',
+    returnPartitions: [{type: 'color', value: 'This is a test for colors', color: '#FF2200'}]
   },
   {
     name: 'test for multiple inner partitions',
@@ -40,6 +35,7 @@ let testCases = [
 
 for (let testCase of testCases) {
   test(testCase.name, () => {
-    expect(generateMarkdown(testCase.paramPartitions)).toBe(testCase.returnMarkdown);
+    debugger;
+    expect(generateInnerPartitions(testCase.paramMarkdown)).toEqual(testCase.returnPartitions);
   });
 }

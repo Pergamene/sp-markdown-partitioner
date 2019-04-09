@@ -96,10 +96,10 @@ function _buildQuotePartition(markdownSubstring) {
     value = markdownSubstring.substring(1).trim();
   }
   let partitions = generateInnerPartitions(value);
-  if (partitions) {
-    return { type: PARTITION_TYPES.QUOTES, partitions };
-  } else {
+  if (!partitions) {
     return { type: PARTITION_TYPES.QUOTES, value };
+  } else {
+    return { type: PARTITION_TYPES.QUOTES, partitions };
   }
 }
 
@@ -118,7 +118,11 @@ function _buildHrPartition() {
 }
 
 function _buildParagraphPartition(markdownSubstring) {
-  return { type: PARTITION_TYPES.PARAGRAPH, partitions: generateInnerPartitions(markdownSubstring) };
+  let partitions = generateInnerPartitions(markdownSubstring);
+  if (!partitions) {
+    partitions = [{ type: PARTITION_TYPES.TEXT, value: markdownSubstring }];
+  }
+  return { type: PARTITION_TYPES.PARAGRAPH, partitions };
 }
 
 // HELPER METHODS
@@ -136,7 +140,9 @@ function _splitAtOuterBreakPoints(markdownText) {
     lastBreakPoint = index + 1;
     index = markdownText.indexOf('\n', lastBreakPoint);
   }
-  markdownSplits.push(markdownText.substring(lastBreakPoint).trim());
+  if (lastBreakPoint < markdownText.length) {
+    markdownSplits.push(markdownText.substring(lastBreakPoint).trim());
+  }
   return markdownSplits;
 }
 
@@ -178,8 +184,7 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
       return index;
     } else if (nextSubstring.startsWith('. ')) {
       return index;
-      // @TODO: needed?
-    } else if (nextSubstring.startsWith('>') /*|| nextSubstring.startsWith('>>>')*/) {
+    } else if (nextSubstring.startsWith('>')) {
       return index;
     } else {
       index = markdownText.indexOf('\n', index + 1);
