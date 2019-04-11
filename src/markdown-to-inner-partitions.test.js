@@ -28,8 +28,8 @@ let testCases = [
   },
   {
     name: 'test for multiple inner partitions',
-    paramMarkdown: '',
-    returnPartitions: [{}]
+    paramMarkdown: '*This markdown has _italics_ inside bold* and [links](www.links.com) and {relations}(PG_123456789012345) and {colors*}(#FF00FF).',
+    returnPartitions: [{type: 'bold', partitions: [{type: 'text', value: 'This markdown has '},{type: 'italics', value: 'italics'},{type: 'text', value: ' inside bold'}]},{type: 'text', value: ' and '},{type: 'link', value: 'links', link: 'www.links.com'},{type: 'text', value: ' and '},{type: 'relation', value: 'relations', relation: 'PG_123456789012345'},{type: 'text', value: ' and '},{type: 'color', value: 'colors*', color: '#FF00FF'},{type: 'text', value: '.'}]
   }
 ]
 

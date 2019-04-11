@@ -8,35 +8,38 @@ export function generateInnerPartitions(markdownSubstring) {
   let currentIndex = 0;
   let nextIndex = _findNextInnerStart(currentIndex, markdownSubstring);
   if (nextIndex === markdownSubstring.length) {
-    if (currentIndex === 0) {
-      return null;
-    } else {
-      partitions.push(_buildTextPartition(markdownSubstring.substring(currentIndex)));
-    }
+    return null;
   }
-  let currentChar, close, colorIndex;
-  while (currentIndex < markdownSubstring.length) {
-    currentChar = markdownSubstring.indexOf(currentIndex);
-    if (currentChar === '*') {
-      partitions.push(_buildBoldPartition(markdownSubstring.substring(currentIndex + 1, nextIndex - 1)));
-    } else if (currentChar === '_') {
-      partitions.push(_buildItalicsPartition(markdownSubstring.substring(currentIndex + 1, nextIndex - 1)));
-    } else if (currentChar === '[') {
-      close = markdownSubstring.indexOf(')', currentIndex) + 1;
-      partitions.push(_buildLinkPartition(markdownSubstring.substring(currentIndex, close)));
-    } else if (currentChar === '{') {
-      close = markdownSubstring.indexOf(')', currentIndex) + 1;
-      colorIndex = markdownSubstring.indexOf('#', currentIndex);
-      if (colorIndex > 0 && colorIndex < close) {
-        partitions.push(_buildColorPartition(markdownSubstring.substring(currentIndex, close)));
-      } else {
-        partitions.push(_buildRelationPartition(markdownSubstring.substring(currentIndex, close)));
-      }
-    } else {
+  let currentChar, close;
+  while (nextIndex < markdownSubstring.length) {
+    if (nextIndex !== currentIndex) {
       partitions.push(_buildTextPartition(markdownSubstring.substring(currentIndex, nextIndex)));
+      currentIndex = nextIndex;
+    } else {
+      currentChar = markdownSubstring.charAt(currentIndex);
+      if (currentChar === '*') {
+        close = _findClose(currentChar, currentIndex, markdownSubstring);
+        if (close > 0) {
+          partitions.push(_buildBoldPartition(markdownSubstring.substring(currentIndex + 1, close)));
+        }
+      } else if (currentChar === '_') {
+        close = _findClose(currentChar, currentIndex, markdownSubstring);
+        if (close > 0) {
+          partitions.push(_buildItalicsPartition(markdownSubstring.substring(currentIndex + 1, close)));
+        }
+      } else if (currentChar === '[') {
+        close = markdownSubstring.indexOf(')', currentIndex);
+        partitions.push(_buildLinkPartition(markdownSubstring.substring(currentIndex, close + 1)));
+      } else if (currentChar === '{') {
+        close = markdownSubstring.indexOf(')', currentIndex);
+        partitions.push(_buildRelationOrColorPartition(markdownSubstring.substring(currentIndex, close + 1)));
+      }
+      currentIndex = close + 1;
     }
-    currentIndex = nextIndex;
     nextIndex = _findNextInnerStart(currentIndex, markdownSubstring);
+  }
+  if (currentIndex !== nextIndex) {
+    partitions.push(_buildTextPartition(markdownSubstring.substring(currentIndex)));
   }
   return partitions;
 }
@@ -64,13 +67,20 @@ function _buildLinkPartition(markdownSubstring) {
   return { type: PARTITION_TYPES.LINK, value: breaks[0], link: breaks[1] };
 }
 
-function _buildRelationPartition(markdownSubstring) {
+function _buildRelationOrColorPartition(markdownSubstring) {
   let breaks = _breakLinkRelationColor('}', markdownSubstring);
+  if (breaks[2] !== true) {
+    return _buildRelationPartition(breaks);
+  } else {
+    return _buildColorPartition(breaks);
+  }
+}
+
+function _buildRelationPartition(breaks) {
   return { type: PARTITION_TYPES.RELATION, value: breaks[0], relation: breaks[1] };
 }
 
-function _buildColorPartition(markdownSubstring) {
-  let breaks = _breakLinkRelationColor('}', markdownSubstring);
+function _buildColorPartition(breaks) {
   return { type: PARTITION_TYPES.COLOR, value: breaks[0], color: breaks[1] };
 }
 
@@ -81,17 +91,20 @@ function _buildTextPartition(markdownSubstring) {
 // HELPER METHODS
 
 function _findNextInnerStart(index, markdownSubstring) {
+  if (index > markdownSubstring.length) {
+    return markdownSubstring.length;
+  }
   let boldIndex = markdownSubstring.indexOf('*', index);
   let italicsIndex = markdownSubstring.indexOf('_', index);
   let linkIndex = markdownSubstring.indexOf('[', index);
   let relColIndex = markdownSubstring.indexOf('{', index);
   let smallestArr = [markdownSubstring.length];
-  if (boldIndex >= 0) {
+  if (boldIndex >= 0 && !_inLinkRelationColor(boldIndex, markdownSubstring, linkIndex, relColIndex)) {
     if (markdownSubstring.charAt(boldIndex - 1) !== '\\') {
       smallestArr.push(boldIndex);
     }
   }
-  if (italicsIndex >= 0) {
+  if (italicsIndex >= 0 && !_inLinkRelationColor(italicsIndex, markdownSubstring, linkIndex, relColIndex)) {
     if (markdownSubstring.charAt(boldIndex - 1) !== '\\') {
       smallestArr.push(italicsIndex);
     }
@@ -113,9 +126,63 @@ function _findNextInnerStart(index, markdownSubstring) {
   return Math.min(...smallestArr);
 }
 
+function _findClose(char, index, markdownSubstring) {
+  let close = markdownSubstring.indexOf(char, index + 1);
+  if (_inLinkRelationColor(close, markdownSubstring)) {
+    while (close > 0 && !_inLinkRelationColor(close, markdownSubstring)) {
+      close = markdownSubstring.indexOf(char, close + 1);
+    }
+  }
+  return close;
+}
+
 function _breakLinkRelationColor(breakChar, markdownSubstring) {
   let breakPoint = markdownSubstring.indexOf(breakChar);
+  let isColor = false;
+  if (breakChar === '}') {
+    isColor = (markdownSubstring.charAt(breakPoint + 2) === '#');
+  }
   let first = markdownSubstring.substring(1, breakPoint);
   let second = markdownSubstring.substring(breakPoint + 2, markdownSubstring.length - 1);
-  return [ first, second ];
+  return [ first, second, isColor ];
+}
+
+function _inLinkRelationColor(index, markdownSubstring, linkIndex, relColIndex) {
+  let inLink = false;
+  let inRelCol = false;
+  if (linkIndex >= 0) {
+    if (index > linkIndex) {
+      inLink = _inLink(index, markdownSubstring);
+    }
+  }
+  if (relColIndex >= 0) {
+    if (index > relColIndex) {
+      inRelCol = _inRelationColor(index, markdownSubstring) 
+    }
+  }
+  return inLink || inRelCol;
+} 
+
+function _inLink(index, markdownSubstring) {
+  let open = markdownSubstring.lastIndexOf('[', index);
+  let mid = markdownSubstring.indexOf('](', open);
+  let close = markdownSubstring.indexOf(')', mid);
+  if (open > 0 && mid > 0 && close > 0) {
+    if (open < index && close > index) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function _inRelationColor(index, markdownSubstring) {
+  let open = markdownSubstring.lastIndexOf('{', index);
+  let mid = markdownSubstring.indexOf('}(', open);
+  let close = markdownSubstring.indexOf(')', mid);
+  if (open > 0 && mid > 0 && close > 0) {
+    if (open < index && close > index) {
+      return true;
+    }
+  }
+  return false;
 }
