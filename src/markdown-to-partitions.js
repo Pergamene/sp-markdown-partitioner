@@ -7,8 +7,14 @@ import { generateInnerPartitions } from './markdown-to-inner-partitions';
  * @param {string} markdownText see partitions-to-markdown 
  */
 export function generatePartitions(markdownText) {
+  //@TODO: REMOVE
   // markdownText = markdownText.replace(/\n\s*\n/g, '\n');  Original, doesn't seem to be needed.
   markdownText = markdownText.replace(/\n+/g, '\n');
+
+  //@TODO: REMOVE
+  markdownText = markdownText.replace(/["“”]/g, '\"');
+  markdownText = markdownText.replace(/’/g, "'");
+
   let partition;
   let partitions = [];
   let markdownSplits = _splitAtOuterBreakPoints(markdownText.trim());
@@ -20,13 +26,13 @@ export function generatePartitions(markdownText) {
 }
 
 function _parseOuterPartition(markdownSubstring) {
-  if (markdownSubstring.startsWith('#')) {
+  if ((markdownSubstring.startsWith('#')) && (markdownSubstring.charAt(markdownSubstring.lastIndexOf('#') + 1) === ' ')) {
     return _buildHeaderPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('*')) {
+  } else if (markdownSubstring.startsWith('* ')) {
     return _buildUnorderedListPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('.')) {
+  } else if (markdownSubstring.startsWith('. ')) {
     return _buildOrderedListPartition(markdownSubstring);
-  } else if (markdownSubstring.startsWith('>')) {
+  } else if (markdownSubstring.startsWith('> ') || markdownSubstring.startsWith('>\n') || markdownSubstring.startsWith('>>> ') || markdownSubstring.startsWith('>>>\n')) {
     return _buildQuotePartition(markdownSubstring);
   } else if (markdownSubstring.startsWith('![')) {
     return _buildImagePartition(markdownSubstring);
@@ -40,7 +46,7 @@ function _parseOuterPartition(markdownSubstring) {
 function _buildHeaderPartition(markdownSubstring) {
   let size = markdownSubstring.lastIndexOf('#') + 1;
   let type = _getHeaderPartitionType(size);
-  let value = markdownSubstring.substring(size).trim();
+  let value = markdownSubstring.substring(size).trim().replace(/\\/g, '');
   return { type, value };
 }
 
@@ -80,10 +86,12 @@ function _makeListItems(markdownSubstring) {
   for (let item of listItems) {
     value = item.substring(1).trim();
     itemObject = generateInnerPartitions(value);
-    if (!itemObject) {
-      itemObject = { type: PARTITION_TYPES.TEXT, value };
+    if (itemObject) {
+      items.push(...itemObject);
+    } else {
+      items.push({ type: PARTITION_TYPES.TEXT, value });
     }
-    items.push(itemObject);
+    
   }
   return items;
 }
@@ -97,6 +105,7 @@ function _buildQuotePartition(markdownSubstring) {
   }
   let partitions = generateInnerPartitions(value);
   if (!partitions) {
+    value = value.replace(/\\/g, '');
     return { type: PARTITION_TYPES.QUOTES, value };
   } else {
     return { type: PARTITION_TYPES.QUOTES, partitions };
@@ -105,7 +114,7 @@ function _buildQuotePartition(markdownSubstring) {
 
 function _buildImagePartition(markdownSubstring) {
   let breakIndex = markdownSubstring.indexOf(']');
-  let altText = markdownSubstring.substring(2, breakIndex);
+  let altText = markdownSubstring.substring(2, breakIndex).replace(/\\/g, '');
   if (altText === '') {
     altText = null;
   }
@@ -120,7 +129,7 @@ function _buildHrPartition() {
 function _buildParagraphPartition(markdownSubstring) {
   let partitions = generateInnerPartitions(markdownSubstring);
   if (!partitions) {
-    partitions = [{ type: PARTITION_TYPES.TEXT, value: markdownSubstring }];
+    partitions = [{ type: PARTITION_TYPES.TEXT, value: markdownSubstring.replace(/\\/g, '') }];
   }
   return { type: PARTITION_TYPES.PARAGRAPH, partitions };
 }
@@ -152,7 +161,7 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
   }
   let currentSubstring = markdownText.substring(lastBreakPoint);
   let nextSubstring = markdownText.substring(index + 1);
-  if (currentSubstring.startsWith('#')) {
+  if (_isHeader(currentSubstring)) {
     return index;
   } else if (currentSubstring.startsWith('* ')) {
     if (nextSubstring.startsWith('* ')) {
@@ -168,7 +177,7 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
     } else {
       return index;
     }
-  } else if (currentSubstring.startsWith('>>>')) {
+  } else if (currentSubstring.startsWith('>>> ') || currentSubstring.startsWith('>>>\n')) {
     index = markdownText.indexOf('>>>', index + 1);
     return index + 3;
   } else if (currentSubstring.startsWith('> ')) {
@@ -178,17 +187,37 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
   } else if (currentSubstring.startsWith('---')) {
     return index;
   } else {
-    if (nextSubstring.startsWith('#')) {
+    if (_isHeader(nextSubstring)) {
       return index;
     } else if (nextSubstring.startsWith('* ')) {
       return index;
     } else if (nextSubstring.startsWith('. ')) {
       return index;
-    } else if (nextSubstring.startsWith('>')) {
+    } else if (nextSubstring.startsWith('> ')) {
+      return index;
+    } else if (nextSubstring.startsWith('![')) {
       return index;
     } else {
       index = markdownText.indexOf('\n', index + 1);
       return _findOuterBreakPoint(lastBreakPoint, index, markdownText);
+    }
+  }
+}
+
+function _isHeader(markdownSubstring) {
+  if (!markdownSubstring.startsWith('#')) {
+    return false;
+  } else {
+    let char;
+    for (let i = 1; i <= 6; i++) {
+      char = markdownSubstring.charAt(i);
+      if (char !== '#') {
+        if (char === ' ') {
+          return true;
+        } else {
+          return false;
+        }
+      }
     }
   }
 }
