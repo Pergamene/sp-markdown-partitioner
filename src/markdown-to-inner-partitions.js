@@ -96,8 +96,8 @@ function _findNextInnerStart(index, markdownSubstring) {
   }
   let boldIndex = _findNextValidChar('*', index, markdownSubstring);
   let italicsIndex = _findNextValidChar('_', index, markdownSubstring);
-  let linkIndex = _findNextValidChar('[', index, markdownSubstring);
-  let relColIndex = _findNextValidChar('{', index, markdownSubstring);
+  let linkIndex = _findNextValidLinkRelCol('[', index, markdownSubstring);
+  let relColIndex = _findNextValidLinkRelCol('{', index, markdownSubstring);
   let smallestArr = [markdownSubstring.length];
   let close;
   if (boldIndex >= 0) {
@@ -129,11 +129,21 @@ function _findNextInnerStart(index, markdownSubstring) {
 
 function _findNextValidChar(keyChar, index, markdownSubstring) {
   let charIndex = markdownSubstring.indexOf(keyChar, index);
-  while (charIndex >= 0) {
-    if ((charIndex === 0 || markdownSubstring.charAt(charIndex - 1) !== '\\') && !_inLinkRelationColor(charIndex, markdownSubstring)) {
-      return charIndex;
-    } else {
-      charIndex = markdownSubstring.indexOf(keyChar, charIndex + 1);
+  if (keyChar === '*' || keyChar === '_') {
+    while (charIndex >= 0) {
+      if ((charIndex === 0 || markdownSubstring.charAt(charIndex - 1) !== '\\') && !_inLinkRelationColor(charIndex, markdownSubstring)) {
+        return charIndex;
+      } else {
+        charIndex = markdownSubstring.indexOf(keyChar, charIndex + 1);
+      }
+    }
+  } else {
+    while (charIndex >= 0) {
+      if (charIndex === 0 || markdownSubstring.charAt(charIndex - 1) !== '\\') {
+        return charIndex;
+      } else {
+        charIndex = markdownSubstring.indexOf(keyChar, charIndex + 1);
+      }
     }
   }
   return charIndex;
@@ -159,23 +169,46 @@ function _inLinkRelationColor(index, markdownSubstring) {
 function _inLink(index, markdownSubstring) {
   let open = markdownSubstring.lastIndexOf('[', index);
   let mid = markdownSubstring.indexOf('](', open);
-  let close = markdownSubstring.indexOf(')', mid);
-  if (open > 0 && mid > 0 && close > 0) {
-    if (open < index && close > index) {
-      return true;
-    }
-  }
-  return false;
+  return _inRange(index, open, mid, markdownSubstring);
 }
 
 function _inRelationColor(index, markdownSubstring) {
   let open = markdownSubstring.lastIndexOf('{', index);
   let mid = markdownSubstring.indexOf('}(', open);
+  return _inRange(index, open, mid, markdownSubstring);
+}
+
+function _inRange(index, open, mid, markdownSubstring) {
   let close = markdownSubstring.indexOf(')', mid);
+  let endLine = markdownSubstring.indexOf('\n', index);
   if (open > 0 && mid > 0 && close > 0) {
-    if (open < index && close > index) {
-      return true;
+    if (mid < endLine && close < endLine) {
+      if (open < index && close > index) {
+        return true;
+      }
     }
   }
   return false;
+}
+
+function _findNextValidLinkRelCol (openChar, index, markdownSubstring) {
+  let open = _findNextValidChar(openChar, index, markdownSubstring);
+  let midChar;
+  if (openChar === '[') {
+    midChar = '](';
+  } else {
+    midChar = '}(';
+  }
+  let mid = markdownSubstring.indexOf(midChar, open);
+  let close = markdownSubstring.indexOf(')', mid);
+  let endLine = markdownSubstring.indexOf('\n', index);
+  if (endLine === -1) {
+    endLine = markdownSubstring.length;
+  }
+  if (open < mid && mid < close) {
+    if (mid < endLine && close < endLine) {
+      return open;
+    }
+  }
+  return -1;
 }

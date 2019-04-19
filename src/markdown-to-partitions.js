@@ -7,14 +7,7 @@ import { generateInnerPartitions } from './markdown-to-inner-partitions';
  * @param {string} markdownText see partitions-to-markdown 
  */
 export function generatePartitions(markdownText) {
-  //@TODO: REMOVE
-  // markdownText = markdownText.replace(/\n\s*\n/g, '\n');  Original, doesn't seem to be needed.
-  markdownText = markdownText.replace(/\n+/g, '\n');
-
-  //@TODO: REMOVE
-  markdownText = markdownText.replace(/["“”]/g, '\"');
-  markdownText = markdownText.replace(/’/g, "'");
-
+  markdownText = markdownText.replace(/(\n+\s*\n*)/g, '\n');
   let partition;
   let partitions = [];
   let markdownSplits = _splitAtOuterBreakPoints(markdownText.trim());
@@ -192,6 +185,8 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
     } else if (nextSubstring.startsWith('* ')) {
       return index;
     } else if (nextSubstring.startsWith('. ')) {
+      return index;
+    } else if (nextSubstring.startsWith('>>> ') || nextSubstring.startsWith('>>>\n')) {
       return index;
     } else if (nextSubstring.startsWith('> ')) {
       return index;

@@ -1,16 +1,16 @@
 import { generateInnerPartitions } from './markdown-to-inner-partitions';
 
 let testCases = [
-  {
-    name: 'test for bold',
-    paramMarkdown: '*This is a test for bold partitions*',
-    returnPartitions: [{type: 'bold', value: 'This is a test for bold partitions'}]
-  },
-  {
-    name: 'test for italics',
-    paramMarkdown: '_This is a test for italics partitions_',
-    returnPartitions: [{type: 'italics', value: 'This is a test for italics partitions'}]
-  },
+  // {
+  //   name: 'test for bold',
+  //   paramMarkdown: '*This is a test for bold partitions*',
+  //   returnPartitions: [{type: 'bold', value: 'This is a test for bold partitions'}]
+  // },
+  // {
+  //   name: 'test for italics',
+  //   paramMarkdown: '_This is a test for italics partitions_',
+  //   returnPartitions: [{type: 'italics', value: 'This is a test for italics partitions'}]
+  // },
   {
     name: 'test for link',
     paramMarkdown: '[This is a test for links](www.link.com)',
