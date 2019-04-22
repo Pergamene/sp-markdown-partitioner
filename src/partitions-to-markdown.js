@@ -1,4 +1,4 @@
-import { PARTITION_TYPES } from '../sp-markdown-partitioner/partition-types';
+import { PARTITION_TYPES } from './partition-types';
 
 const partitionExample = [
   {
@@ -131,8 +131,8 @@ const partitionExample = [
 ## This is an h2 header
 
 This is regular text.
-Any parition type can be split on multiple lines.
-They *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).
+It can be split on multiple lines.
+It *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).
 
 * unordered list
 
@@ -149,7 +149,7 @@ They *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}
 
 >>>
 or quoted paragraphs
-if it's more than one line
+if it\'s more than one line
 >>>
 `
 
@@ -192,9 +192,9 @@ function _convertPartitionToMarkdownOuter(partition) {
     case PARTITION_TYPES.H2:
       markdownText += '#';
     case PARTITION_TYPES.H1:
-      return markdownText += '# ' + _partitionCheckParseOrAdd(partition);
-    case PARTITION_TYPES.PARAGRAPH:
       return markdownText += '# ' + partition.value;
+    case PARTITION_TYPES.PARAGRAPH:
+      return markdownText += _partitionCheckParseOrAdd(partition);
     case PARTITION_TYPES.UNORDERED_LIST:
       return markdownText += _parseList(partition.items, PARTITION_TYPES.UNORDERED_LIST).trim();
     case PARTITION_TYPES.ORDERED_LIST:
@@ -239,9 +239,9 @@ function _partitionCheckParseOrAdd(partition) {
 function _parseQuote(partition) {
   let markdownText = _partitionCheckParseOrAdd(partition);
   if (markdownText.includes('\n')) {
-    return '>>>\n' + markdownText + '\n>>>\n\n';
+    return '>>>\n' + markdownText + '\n>>>';
   } else {
-    return '> ' + markdownText + '\n\n';
+    return '> ' + markdownText;
   }
 }
 
