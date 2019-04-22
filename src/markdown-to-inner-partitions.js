@@ -88,8 +88,6 @@ function _buildTextPartition(markdownSubstring) {
   return { type: PARTITION_TYPES.TEXT, value: markdownSubstring.replace(/\\/g, '') };
 }
 
-// HELPER METHODS
-
 function _findNextInnerStart(index, markdownSubstring) {
   if (index >= markdownSubstring.length) {
     return markdownSubstring.length;

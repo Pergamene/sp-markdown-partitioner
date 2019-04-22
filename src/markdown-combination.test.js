@@ -15,7 +15,6 @@ let testCases = [
 
 for (let testCase of testCases) {
   test(testCase.name, () => {
-    debugger;
     expect(generatePartitions(testCase.paramMarkdown)).toEqual(testCase.returnPartitions);
   });
 }

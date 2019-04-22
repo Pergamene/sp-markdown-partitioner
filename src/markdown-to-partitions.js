@@ -7,7 +7,7 @@ import { generateInnerPartitions } from './markdown-to-inner-partitions';
  * @param {string} markdownText see partitions-to-markdown 
  */
 export function generatePartitions(markdownText) {
-  markdownText = markdownText.replace(/(\n+\s*\n*)/g, '\n');
+  markdownText = _conformNewlines(markdownText);
   let partition;
   let partitions = [];
   let markdownSplits = _splitAtOuterBreakPoints(markdownText.trim());
@@ -39,7 +39,7 @@ function _parseOuterPartition(markdownSubstring) {
 function _buildHeaderPartition(markdownSubstring) {
   let size = markdownSubstring.lastIndexOf('#') + 1;
   let type = _getHeaderPartitionType(size);
-  let value = markdownSubstring.substring(size).trim().replace(/\\/g, '');
+  let value = _removeEscapedDelimiter(markdownSubstring.substring(size).trim());
   return { type, value };
 }
 
@@ -98,7 +98,7 @@ function _buildQuotePartition(markdownSubstring) {
   }
   let partitions = generateInnerPartitions(value);
   if (!partitions) {
-    value = value.replace(/\\/g, '');
+    value = _removeEscapedDelimiter(value);
     return { type: PARTITION_TYPES.QUOTES, value };
   } else {
     return { type: PARTITION_TYPES.QUOTES, partitions };
@@ -107,7 +107,7 @@ function _buildQuotePartition(markdownSubstring) {
 
 function _buildImagePartition(markdownSubstring) {
   let breakIndex = markdownSubstring.indexOf(']');
-  let altText = markdownSubstring.substring(2, breakIndex).replace(/\\/g, '');
+  let altText =  _removeEscapedDelimiter(markdownSubstring.substring(2, breakIndex));
   if (altText === '') {
     altText = null;
   }
@@ -122,12 +122,10 @@ function _buildHrPartition() {
 function _buildParagraphPartition(markdownSubstring) {
   let partitions = generateInnerPartitions(markdownSubstring);
   if (!partitions) {
-    partitions = [{ type: PARTITION_TYPES.TEXT, value: markdownSubstring.replace(/\\/g, '') }];
+    partitions = [{ type: PARTITION_TYPES.TEXT, value: _removeEscapedDelimiter(markdownSubstring) }];
   }
   return { type: PARTITION_TYPES.PARAGRAPH, partitions };
 }
-
-// HELPER METHODS
 
 function _splitAtOuterBreakPoints(markdownText) {
   let markdownSplits = [];
@@ -215,4 +213,12 @@ function _isHeader(markdownSubstring) {
       }
     }
   }
+}
+
+function _removeEscapedDelimiter(markdownSubstring) {
+  return markdownSubstring.replace(/\\/g, '');
+}
+
+function _conformNewlines(markdownText) {
+  markdownText.replace(/(\n+\s*\n*)/g, '\n');
 }
