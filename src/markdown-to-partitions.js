@@ -152,9 +152,7 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
   }
   let currentSubstring = markdownText.substring(lastBreakPoint);
   let nextSubstring = markdownText.substring(index + 1);
-  if (_isHeader(currentSubstring)) {
-    return index;
-  } else if (currentSubstring.startsWith('* ')) {
+  if (currentSubstring.startsWith('* ')) {
     if (nextSubstring.startsWith('* ')) {
       index = markdownText.indexOf('\n', index + 1);
       return _findOuterBreakPoint(lastBreakPoint, index, markdownText);
@@ -171,47 +169,8 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
   } else if (currentSubstring.startsWith('>>> ') || currentSubstring.startsWith('>>>\n')) {
     index = markdownText.indexOf('>>>', index + 1);
     return index + 3;
-  } else if (currentSubstring.startsWith('> ')) {
-    return index;
-  } else if (currentSubstring.startsWith('![')) {
-    return index;
-  } else if (currentSubstring.startsWith('---')) {
-    return index;
   } else {
-    if (_isHeader(nextSubstring)) {
-      return index;
-    } else if (nextSubstring.startsWith('* ')) {
-      return index;
-    } else if (nextSubstring.startsWith('. ')) {
-      return index;
-    } else if (nextSubstring.startsWith('>>> ') || nextSubstring.startsWith('>>>\n')) {
-      return index;
-    } else if (nextSubstring.startsWith('> ')) {
-      return index;
-    } else if (nextSubstring.startsWith('![')) {
-      return index;
-    } else {
-      index = markdownText.indexOf('\n', index + 1);
-      return _findOuterBreakPoint(lastBreakPoint, index, markdownText);
-    }
-  }
-}
-
-function _isHeader(markdownSubstring) {
-  if (!markdownSubstring.startsWith('#')) {
-    return false;
-  } else {
-    let char;
-    for (let i = 1; i <= 6; i++) {
-      char = markdownSubstring.charAt(i);
-      if (char !== '#') {
-        if (char === ' ') {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    }
+    return index;
   }
 }
 
@@ -220,5 +179,5 @@ function _removeEscapedDelimiter(markdownSubstring) {
 }
 
 function _conformNewlines(markdownText) {
-  markdownText.replace(/(\n+\s*\n*)/g, '\n');
+  return markdownText.replace(/(\n+\s*\n*)/g, '\n');
 }
