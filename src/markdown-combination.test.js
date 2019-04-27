@@ -15,6 +15,11 @@ let testCases = [
     name: 'test for lists of partitions',
     paramMarkdown: '* [link list](www.link.com)\n* {relation list}(PG_123456)\n. {color list}(#112233)',
     returnPartitions: [{type: 'ul', items: [{type: 'link', value: 'link list', link: 'www.link.com'},{type: 'relation', value: 'relation list', relation: 'PG_123456'}]},{type: 'ol', items: [{type: 'color', value: 'color list', color: '#112233'}]}]
+  },
+  {
+    name: 'test for inner partitions in quotes',
+    paramMarkdown: '> What is the *{most}(#FF0000)* _important_ {step}(PG_1234567890) a man can [take?](www.link.com)\n> The *_next_* one.',
+    returnPartitions: [{type:'quotes',partitions:[{type:'text',value:'What is the '},{type:'bold',partitions:[{type:'color',value:'most',color:'#FF0000'}]},{type:'text',value:' '},{type:'italics',value:'important'},{type:'text',value:' '},{type:'relation',value:'step',relation:'PG_1234567890'},{type:'text',value:' a man can '},{type:'link',value:'take?',link:'www.link.com'}]},{type:'quotes',partitions:[{type:'text',value:'The '},{type:'bold',partitions:[{type:'italics',value:'next'}]},{type:'text',value:' one.'}]}]
   }
 ]
 
