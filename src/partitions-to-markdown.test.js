@@ -8,8 +8,8 @@ let testCases = [
   },
   {
     name: 'test for paragraphs',
-    paramPartitions: [{type: 'p', partitions: [{type: 'text', value: 'Paragraph text\non multiple lines.'}]}],
-    returnMarkdown: 'Paragraph text\non multiple lines.'
+    paramPartitions: [{type: 'p', partitions: [{type: 'text', value: 'Paragraph text'}]},{type: 'p', partitions: [{type:'text', value: 'on multiple lines.'}]}],
+    returnMarkdown: 'Paragraph text\n\non multiple lines.'
   },
   {
     name: 'test for unordered list',
@@ -48,8 +48,8 @@ let testCases = [
   },
   {
     name: 'test for text',
-    paramPartitions: [{type: 'p', partitions: [{type: 'text', value: 'This is text\nsplit on multiple lines.'}]}],
-    returnMarkdown: 'This is text\nsplit on multiple lines.'
+    paramPartitions: [{type: 'p', partitions: [{type: 'text', value: 'This is text'}]},{type: 'p', partitions: [{type: 'text', value: 'split on multiple lines.'}]}],
+    returnMarkdown: 'This is text\n\nsplit on multiple lines.'
   },
   {
     name: 'test for bold',
@@ -78,8 +78,8 @@ let testCases = [
   },
   {
     name: 'test for combined partitions',
-    paramPartitions: [{type: 'h1',value: 'This is an h1 header'},{type: 'h2',value: 'This is an h2 header'},{type: 'p',partitions: [{type: 'text',value: 'This is regular text.\nIt can be split on multiple lines.\nIt '},{type: 'bold',value: 'can'},{type: 'text',value: ' '},{type: 'italics',value: 'also'},{type: 'text',value: ' '},{type: 'bold',partitions: [{type: 'italics',value: 'contain'}]},{type: 'text',value: ' '},{type: 'link',value: 'inline links',link: 'https://www.google.com'},{type: 'text',value: ' '},{type: 'relation',value: 'relations',relation: 'PG_123456789012345',},{type: 'text',value: ' or '},{type: 'color',value: 'colors',color: '#FF2200'},{type: 'text',value: '.'}]},{type: 'ul',items: [{type: 'text',value: 'unordered list'}]},{type: 'ol',items: [{type: 'bold',partitions: [{type: 'italics',value: 'ordered list 1'}]},{type: 'text',value: 'ordered list 2'}]},{type: 'image',altText: 'alt text for an image',link: 'https://www.google.com/someimage'},{type: 'image',altText: null,link: 'https://www.google.com/someimage'},{type: 'quotes',value: 'quoted text'},{type: 'hr'},{type: 'quotes',value: 'or quoted paragraphs\nif it\'s more than one line'}],
-    returnMarkdown: '# This is an h1 header\n\n## This is an h2 header\n\nThis is regular text.\nIt can be split on multiple lines.\nIt *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).\n\n* unordered list\n\n. *_ordered list 1_*\n. ordered list 2\n\n![alt text for an image](https://www.google.com/someimage)\n\n![](https://www.google.com/someimage)\n\n> quoted text\n\n---\n\n>>>\nor quoted paragraphs\nif it\'s more than one line\n>>>'
+    paramPartitions: [{type: 'h1',value: 'This is an h1 header'},{type: 'h2',value: 'This is an h2 header'},{type: 'p',partitions: [{type: 'text',value: 'This is regular text.'}]},{type: 'p', partitions: [{type: 'text', value: 'It can be split on multiple lines.'}]},{type: 'p', partitions: [{type: 'text', value: 'It '},{type: 'bold',value: 'can'},{type: 'text',value: ' '},{type: 'italics',value: 'also'},{type: 'text',value: ' '},{type: 'bold',partitions: [{type: 'italics',value: 'contain'}]},{type: 'text',value: ' '},{type: 'link',value: 'inline links',link: 'https://www.google.com'},{type: 'text',value: ' '},{type: 'relation',value: 'relations',relation: 'PG_123456789012345',},{type: 'text',value: ' or '},{type: 'color',value: 'colors',color: '#FF2200'},{type: 'text',value: '.'}]},{type: 'ul',items: [{type: 'text',value: 'unordered list'}]},{type: 'ol',items: [{type: 'bold',partitions: [{type: 'italics',value: 'ordered list 1'}]},{type: 'text',value: 'ordered list 2'}]},{type: 'image',altText: 'alt text for an image',link: 'https://www.google.com/someimage'},{type: 'image',altText: null,link: 'https://www.google.com/someimage'},{type: 'quotes',value: 'quoted text'},{type: 'hr'},{type: 'quotes',value: 'or quoted paragraphs\nif it\'s more than one line'}],
+    returnMarkdown: '# This is an h1 header\n\n## This is an h2 header\n\nThis is regular text.\n\nIt can be split on multiple lines.\n\nIt *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).\n\n* unordered list\n\n. *_ordered list 1_*\n. ordered list 2\n\n![alt text for an image](https://www.google.com/someimage)\n\n![](https://www.google.com/someimage)\n\n> quoted text\n\n---\n\n>>>\nor quoted paragraphs\nif it\'s more than one line\n>>>'
   }
 ];
 

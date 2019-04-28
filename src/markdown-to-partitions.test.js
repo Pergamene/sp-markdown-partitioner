@@ -31,11 +31,6 @@ let testCases = [
     paramMarkdown: '* ul 1\n* ul 2\n. ol 1\n. ol 2\n* ul 2-1\n* ul 2-2',
     returnPartitions: [{type: 'ul', items: [{type: 'text', value: 'ul 1'},{type: 'text', value: 'ul 2'}]},{type: 'ol', items: [{type: 'text', value: 'ol 1'},{type: 'text', value: 'ol 2'}]},{type: 'ul', items: [{type: 'text', value: 'ul 2-1'},{type: 'text', value: 'ul 2-2'}]}]
   },
-  // {
-  //   name: 'test for consecutive lists',
-  //   paramMarkdown: '* ul 1-1\n* ul 1-2\n\n* ul 2-1\n* ul 2-2',
-  //   returnPartitions: [{type: 'ul', items: [{type: 'text', value: 'ul 1-1'},{type: 'text', value: 'ul 1-2'}]},{type: 'ul', items: [{type: 'text', value: 'ul 2-1'},{type: 'text', value: 'ul 2-2'}]}]
-  // },
   {
     name: 'test for image',
     paramMarkdown: '![alt text for an image](https://www.google.com/someimage)\n\n![](https://www.google.com/someimage)',
