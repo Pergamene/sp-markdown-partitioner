@@ -1,10 +1,10 @@
 import { PARTITION_TYPES } from './partition-types';
-import { generateInnerPartitions } from './markdown-to-inner-partitions';
+import { _generateInnerPartitions } from './markdown-to-inner-partitions';
 
 /**
- * assemble all partition fragments
- * 
- * @param {string} markdownText see partitions-to-markdown 
+ * Converts user markdown into partitions array.
+ * @param   {string}    markdownText User markdown.
+ * @returns {partition}
  */
 export function generatePartitions(markdownText) {
   markdownText = _conformNewlines(markdownText);
@@ -78,7 +78,7 @@ function _makeListItems(markdownSubstring) {
   let itemObject;
   for (let item of listItems) {
     value = item.substring(1).trim();
-    itemObject = generateInnerPartitions(value);
+    itemObject = _generateInnerPartitions(value);
     if (itemObject) {
       items.push(...itemObject);
     } else {
@@ -96,7 +96,7 @@ function _buildQuotePartition(markdownSubstring) {
   } else {
     value = markdownSubstring.substring(1).trim();
   }
-  let partitions = generateInnerPartitions(value);
+  let partitions = _generateInnerPartitions(value);
   if (!partitions) {
     value = _removeEscapedDelimiter(value);
     return { type: PARTITION_TYPES.QUOTES, value };
@@ -120,7 +120,7 @@ function _buildHrPartition() {
 }
 
 function _buildParagraphPartition(markdownSubstring) {
-  let partitions = generateInnerPartitions(markdownSubstring);
+  let partitions = _generateInnerPartitions(markdownSubstring);
   if (!partitions) {
     partitions = [{ type: PARTITION_TYPES.TEXT, value: _removeEscapedDelimiter(markdownSubstring) }];
   }
