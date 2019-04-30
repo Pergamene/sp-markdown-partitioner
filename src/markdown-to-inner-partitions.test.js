@@ -1,4 +1,4 @@
-import { _generateInnerPartitions } from './markdown-to-inner-partitions';
+import { generateInnerPartitions } from './markdown-to-inner-partitions';
 
 let testCases = [
   {
@@ -112,6 +112,6 @@ let testCases = [
 
 for (let testCase of testCases) {
   test(testCase.name, () => {
-    expect(_generateInnerPartitions(testCase.paramMarkdown)).toEqual(testCase.returnPartitions);
+    expect(generateInnerPartitions(testCase.paramMarkdown)).toEqual(testCase.returnPartitions);
   });
 }

@@ -1,6 +1,6 @@
 import { PARTITION_TYPES } from './partition-types';
 
-export function _generateInnerPartitions(markdownSubstring) {
+export function generateInnerPartitions(markdownSubstring) {
   if (markdownSubstring.length === 0) {
     return null;
   }
@@ -45,7 +45,7 @@ export function _generateInnerPartitions(markdownSubstring) {
 }
 
 function _buildBoldPartition(markdownSubstring) {
-  let partitions = _generateInnerPartitions(markdownSubstring);
+  let partitions = generateInnerPartitions(markdownSubstring);
   if (!partitions) {
     return { type: PARTITION_TYPES.BOLD, value: markdownSubstring.replace(/\\/g, '') };
   } else {
@@ -54,7 +54,7 @@ function _buildBoldPartition(markdownSubstring) {
 }
 
 function _buildItalicsPartition(markdownSubstring) {
-  let partitions = _generateInnerPartitions(markdownSubstring);
+  let partitions = generateInnerPartitions(markdownSubstring);
   if (!partitions) {
     return { type: PARTITION_TYPES.ITALICS, value: markdownSubstring.replace(/\\/g, '') };
   } else {
