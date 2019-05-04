@@ -1,162 +1,9 @@
 import { PARTITION_TYPES } from './partition-types';
 
-const partitionExample = [
-  {
-    type: 'h1',
-    value: 'This is an h1 header'
-  },
-  {
-    type: 'h2',
-    value: 'This is an h2 header'
-  },
-  {
-    type: 'p',
-    partitions: [
-      {
-        type: 'text',
-        value: 'This is regular text.\nIt can be split on multiple lines.\nIt '
-      },
-      {
-        type: 'bold',
-        value: 'can'
-      },
-      {
-        type: 'text',
-        value: ' '
-      },
-      {
-        type: 'italics',
-        value: 'also'
-      },
-      {
-        type: 'text',
-        value: ' '
-      },
-      {
-        type: 'bold',
-        partitions: [
-          {
-            type: 'italics',
-            value: 'contain'  
-          }
-        ]
-      },
-      {
-        type: 'text',
-        value: ' '
-      },
-      {
-        type: 'link',
-        value: 'inline links',
-        link: 'https://www.google.com'
-      },
-      {
-        type: 'text',
-        value: ' '
-      }, 
-      {
-        type: 'relation',
-        value: 'relations',
-        relation: 'PG_123456789012345',
-      },
-      {
-        type: 'text',
-        value: ' or '
-      },
-      {
-        type: 'color',
-        value: 'colors',
-        color: '#FF2200'
-      },
-      {
-        type: 'text',
-        value: '.'                        
-      }
-    ]
-  },
-  {
-    type: 'ul',
-    items: [
-      {
-        type: 'text',
-        value: 'unordered list'
-      }
-    ]
-  },
-  {
-    type: 'ol',
-    items: [
-      {
-        type: 'bold',
-        partitions: [
-          {
-            type: 'italics',
-            value: 'ordered list 1'  
-          }
-        ]
-      },
-      {
-        type: 'text',
-        value: 'ordered list 2'
-      }
-    ]
-  },
-  {
-    type: 'image',
-    altText: 'alt text for an image',
-    link: 'https://www.google.com/someimage'
-  },
-  {
-    type: 'image',
-    altText: null,
-    link: 'https://www.google.com/someimage'
-  },
-  {
-    type: 'quotes',
-    value: 'quoted text'
-  },
-  {
-    type: 'hr'
-  },
-  {
-    type: 'quotes',
-    value: 'or quoted paragraphs\nif it\'s more than one line'
-  }
-];
-
-//should print out something like:
-`
-# This is an h1 header
-
-## This is an h2 header
-
-This is regular text.
-It can be split on multiple lines.
-It *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).
-
-* unordered list
-
-. *_ordered list 1_*
-. ordered list 2
-
-![alt text for an image](https://www.google.com/someimage)
-
-![](https://www.google.com/someimage)
-
-> quoted text
-
----
-
->>>
-or quoted paragraphs
-if it\'s more than one line
->>>
-`
-
 /**
- * 
- * @param partition - Array of Partitions.  See Partition object above as an example.
- * @return string
+ * Converts partition array into markdown text for editing.
+ * @param  {partition} partitions Array of partitions.
+ * @return {string}
  */
 export function generateMarkdown(partitions) {
   return _generateMarkdownRecursiveOuter(partitions).trim();
@@ -229,11 +76,9 @@ function _convertPartitionToMarkdownInner(partition) {
 function _partitionCheckParseOrAdd(partition) {
   let markdownText = '';
   if (partition.partitions) {
-    markdownText += _generateMarkdownRecursiveInner(partition.partitions);
-  } else {
-    markdownText += partition.value;
+    return markdownText += _generateMarkdownRecursiveInner(partition.partitions);
   }
-  return markdownText;
+  return markdownText += partition.value;
 }
 
 function _parseQuote(partition) {
