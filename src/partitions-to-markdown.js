@@ -77,9 +77,8 @@ function _partitionCheckParseOrAdd(partition) {
   let markdownText = '';
   if (partition.partitions) {
     return markdownText += _generateMarkdownRecursiveInner(partition.partitions);
-  } else {
-    return markdownText += partition.value;
   }
+  return markdownText += partition.value;
 }
 
 function _parseQuote(partition) {
