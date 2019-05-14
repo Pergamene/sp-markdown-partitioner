@@ -290,6 +290,34 @@ let testCases = [
         value: 'Multiline\nquotes.'
       }
     ]
+  },
+  {
+    name: 'test for escape characters',
+    paramMarkdown: '\\**A*',
+    returnPartitions: [
+      {
+        type: 'p',
+        partitions: [
+          {
+            type: 'text',
+            value: '\\\\'
+          }
+        ]
+      },
+      {
+        type: 'bold',
+        value: ''
+      },
+      {
+        type: 'p',
+        partitions: [
+          {
+            type: 'text',
+            value: 'A*'
+          }
+        ]
+      }
+    ]
   }
 ];
 
