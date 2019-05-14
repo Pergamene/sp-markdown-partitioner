@@ -290,39 +290,12 @@ let testCases = [
         value: 'Multiline\nquotes.'
       }
     ]
-  },
-  {
-    name: 'test for escape characters',
-    paramMarkdown: '\\**A*',
-    returnPartitions: [
-      {
-        type: 'p',
-        partitions: [
-          {
-            type: 'text',
-            value: '\\\\'
-          }
-        ]
-      },
-      {
-        type: 'bold',
-        value: ''
-      },
-      {
-        type: 'p',
-        partitions: [
-          {
-            type: 'text',
-            value: 'A*'
-          }
-        ]
-      }
-    ]
   }
 ];
 
 for (let testCase of testCases) {
   test(testCase.name, () => {
+    debugger;
     expect(generatePartitions(testCase.paramMarkdown)).toEqual(testCase.returnPartitions);
   });
 }

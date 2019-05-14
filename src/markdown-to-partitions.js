@@ -175,14 +175,13 @@ function _findOuterBreakPoint(lastBreakPoint, index, markdownText) {
 }
 
 function _removeEscapedDelimiter(markdownSubstring) {
+  // @TODO: remove old
   // return markdownSubstring.replace(/\\/g, '');
-  markdownSubstring = markdownSubstring.replace(/(\\[*])/g, '*');
-  markdownSubstring = markdownSubstring.replace(/(\\[_])/g, '_');
-  markdownSubstring = markdownSubstring.replace(/(\\[>])/g, '>');
-  markdownSubstring = markdownSubstring.replace(/(\\[#])/g, '#');
-  markdownSubstring = markdownSubstring.replace(/(\\[.])/g, '.');
-  markdownSubstring = markdownSubstring.replace(/(\\[{])/g, '{');
-  markdownSubstring = markdownSubstring.replace(/(\\[[])/g, '[');
+  markdownSubstring = markdownSubstring.replace(/(\\+[*])/g, '*');
+  markdownSubstring = markdownSubstring.replace(/(\\+[_])/g, '_');
+  markdownSubstring = markdownSubstring.replace(/(\\+[>])/g, '>');
+  markdownSubstring = markdownSubstring.replace(/(\\+[#])/g, '#');
+  markdownSubstring = markdownSubstring.replace(/(\\+[.])/g, '.');
   return markdownSubstring;
 }
 
