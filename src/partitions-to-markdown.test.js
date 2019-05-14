@@ -498,7 +498,7 @@ let testCases = [
         ]
       }
     ],
-    returnMarkdown: '\* This \_ has \*escaped\_ special \* characters.\n\n\>escaped quotes\n\n\>>> escaped quote paragraphs\n\n\#### escaped headers\n\n\. escaped list items.'
+    returnMarkdown: '\\* This \\_ has \\*escaped\\_ special \\* characters.\n\n\\>escaped quotes\n\n\\>>> escaped quote paragraphs\n\n\\#### escaped headers\n\n\\. escaped list items.'
   }
 ];
 

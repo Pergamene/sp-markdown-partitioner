@@ -103,10 +103,12 @@ function _parseList(partitions, type) {
 }
 
 function _addEscapeCharacter(value) {
-  value = value.replace(/[*]/g, '\*');
-  value = value.replace(/[_]/g, '\_');
-  value = value.replace(/^[>]/g, '\>');
-  value = value.replace(/^[#]/g, '\#');
-  value = value.replace(/^[.]/g, '\.');
+  value = value.replace(/[*]/g, '\\*');
+  value = value.replace(/[_]/g, '\\_');
+  value = value.replace(/^[>]/g, '\\>');
+  value = value.replace(/^[#]/g, '\\#');
+  if (value.startsWith('.') && value.length > 1) {
+    value = value.replace(/^[.]/g, '\\.');
+  }
   return value;
 }
