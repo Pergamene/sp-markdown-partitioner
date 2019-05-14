@@ -468,7 +468,7 @@ let testCases = [
         partitions: [
           {
             type: "text",
-            value: 'Rand    shut   his     mouth and     tucked   in   his    shirt. Remember   who she    is? Burn    me, what   I wouldn\'t    give to forget who she is!'
+            value: 'Rand shut his mouth and tucked in his shirt. Remember who she is? Burn me, what I wouldn\'t give to forget who she is!'
           }
         ]
       },

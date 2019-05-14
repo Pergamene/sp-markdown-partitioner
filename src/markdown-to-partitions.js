@@ -7,7 +7,7 @@ import { generateInnerPartitions } from './markdown-to-inner-partitions';
  * @returns {partition}
  */
 export function generatePartitions(markdownText) {
-  markdownText = _conformNewlines(markdownText);
+  markdownText = _conformWhiteSpace(markdownText);
   let partition;
   let partitions = [];
   let markdownSplits = _splitAtOuterBreakPoints(markdownText.trim());
@@ -185,6 +185,8 @@ function _removeEscapedDelimiter(markdownSubstring) {
   return markdownSubstring;
 }
 
-function _conformNewlines(markdownText) {
-  return markdownText.replace(/(\n+\s*\n*)/g, '\n');
+function _conformWhiteSpace(markdownText) {
+  markdownText = markdownText.replace(/( ){2,}/g, ' ');
+  markdownText = markdownText.replace(/(\n+\s*\n*)/g, '\n');
+  return markdownText;
 }
