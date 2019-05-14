@@ -448,6 +448,57 @@ let testCases = [
       }
     ],
     returnMarkdown: '# This is an h1 header\n\n## This is an h2 header\n\nThis is regular text.\n\nIt can be split on multiple lines.\n\nIt *can* _also_ *_contain_* [inline links](https://www.google.com) {relations}(PG_123456789012345) or {colors}(#FF2200).\n\n* unordered list\n\n. *_ordered list 1_*\n. ordered list 2\n\n![alt text for an image](https://www.google.com/someimage)\n\n![](https://www.google.com/someimage)\n\n> quoted text\n\n---\n\n>>>\nor quoted paragraphs\nif it\'s more than one line\n>>>'
+  },
+  {
+    name: 'test for re-inserting escape characters',
+    paramPartitions: [
+      {
+        type: 'p',
+        partitions: [
+          {
+            type: 'text',
+            value: '* This _ has *escaped_ special * characters.'
+          }
+        ]
+      },
+      {
+        type: 'p',
+        partitions: [
+          {
+            type: 'text',
+            value: '>escaped quotes'
+          }
+        ]
+      },
+      {
+        type: 'p',
+        partitions: [
+          {
+            type: 'text',
+            value: '>>> escaped quote paragraphs'
+          }
+        ]
+      },
+      {
+        type: 'p',
+        partitions: [
+          {
+            type: 'text',
+            value: '#### escaped headers'
+          }
+        ]
+      },
+      {
+        type: 'p',
+        partitions: [
+          {
+            type: 'text',
+            value: '. escaped list items.'
+          }
+        ]
+      }
+    ],
+    returnMarkdown: '\\* This \\_ has \\*escaped\\_ special \\* characters.\n\n\\>escaped quotes\n\n\\>>> escaped quote paragraphs\n\n\\#### escaped headers\n\n\\. escaped list items.'
   }
 ];
 

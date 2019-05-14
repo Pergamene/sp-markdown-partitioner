@@ -39,7 +39,7 @@ function _convertPartitionToMarkdownOuter(partition) {
     case PARTITION_TYPES.H2:
       markdownText += '#';
     case PARTITION_TYPES.H1:
-      return markdownText += '# ' + partition.value;
+      return markdownText += '# ' + _addEscapeCharacter(partition.value);
     case PARTITION_TYPES.PARAGRAPH:
       return markdownText += _partitionCheckParseOrAdd(partition);
     case PARTITION_TYPES.UNORDERED_LIST:
@@ -65,11 +65,11 @@ function _convertPartitionToMarkdownInner(partition) {
     case PARTITION_TYPES.ITALICS:
       return markdownText += '_' + _partitionCheckParseOrAdd(partition) + '_';
     case PARTITION_TYPES.LINK:
-      return markdownText += '[' + partition.value + '](' + partition.link + ')';
+      return markdownText += '[' + _addEscapeCharacter(partition.value) + '](' + partition.link + ')';
     case PARTITION_TYPES.RELATION:
-      return markdownText += '{' + partition.value + '}(' + partition.relation + ')';
+      return markdownText += '{' + _addEscapeCharacter(partition.value) + '}(' + partition.relation + ')';
     case PARTITION_TYPES.COLOR:
-      return markdownText += '{' + partition.value + '}(' + partition.color + ')';
+      return markdownText += '{' + _addEscapeCharacter(partition.value) + '}(' + partition.color + ')';
   }
 }
 
@@ -78,7 +78,7 @@ function _partitionCheckParseOrAdd(partition) {
   if (partition.partitions) {
     return markdownText += _generateMarkdownRecursiveInner(partition.partitions);
   }
-  return markdownText += partition.value;
+  return markdownText += _addEscapeCharacter(partition.value);
 }
 
 function _parseQuote(partition) {
@@ -100,4 +100,15 @@ function _parseList(partitions, type) {
     }
   }
   return markdownText;
+}
+
+function _addEscapeCharacter(value) {
+  value = value.replace(/[*]/g, '\\*');
+  value = value.replace(/[_]/g, '\\_');
+  value = value.replace(/^[>]/g, '\\>');
+  value = value.replace(/^[#]/g, '\\#');
+  if (value.startsWith('.') && value.length > 1) {
+    value = value.replace(/^[.]/g, '\\.');
+  }
+  return value;
 }
